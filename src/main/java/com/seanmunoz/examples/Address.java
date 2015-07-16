@@ -1,3 +1,8 @@
+/**
+ * This code is from a blog at URL:
+ *    http://blog.bdoughan.com/2010/08/creating-restful-web-service-part-25.html
+ */
+
 package com.seanmunoz.examples;
 
 import java.io.Serializable;
@@ -6,6 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
+
+import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
  
 @Entity
 public class Address implements Serializable {
@@ -46,6 +53,7 @@ public class Address implements Serializable {
         this.street = street;
     }
  
+    @XmlInverseReference(mappedBy="address")
     public Customer getCustomer() {
         return customer;
     }

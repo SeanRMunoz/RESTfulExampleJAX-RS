@@ -10,12 +10,14 @@ import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @NamedQuery(name = "findCustomersByCity", 
            query = "SELECT c " +
                    "FROM Customer c " +
                    "WHERE c.address.city = :city")
+@XmlRootElement
 public class Customer implements Serializable {
    private static final long serialVersionUID = 1L;
 

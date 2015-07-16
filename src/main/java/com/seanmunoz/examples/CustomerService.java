@@ -26,7 +26,9 @@ import javax.ws.rs.core.MediaType;
 @Path("/customers")
 public class CustomerService {
 
-    @PersistenceContext(unitName="CustomerService",
+	// NOTE: unitName is the name of the "persistence unit" as defined in the
+	// persistence.xml file
+    @PersistenceContext(unitName="RESTfulExampleJAX-RS",
                         type=PersistenceContextType.TRANSACTION)
     EntityManager entityManager;
 

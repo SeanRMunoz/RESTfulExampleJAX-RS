@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
  
 @Entity
 @Table(name="PHONE_NUMBER")
@@ -51,6 +53,7 @@ public class PhoneNumber implements Serializable {
         this.type = type;
     }
  
+    @XmlInverseReference(mappedBy="phoneNumbers")
     public Customer getCustomer() {
         return this.customer;
     }
