@@ -1,12 +1,47 @@
 # RESTfulExampleJAX-RS
-Example of creating a RESTful web service using Java EE's JAX-RS API. 
+Example project that creates a _**RESTful Web Service**_ using **Java EE** technologies. The service is deployed to **GlassFish** and uses a *JDBC connection pool* that ties to a *MySQL* database on the backend. 
 
+## Technologies Used:
+The following **Java EE** technologies are used in this project:
 
+- **JAX-RS:** The Java API for RESTful Web Services 
+- **JPA:** Java Persistence Architecture
+- **JAXB:** Java Architecture for XML Binding
+- **EJB:** Enterprise JavaBeans
+- **JDBC Connection Pools** and **JDBC Resource** on **GlassFish Server v4.1** 
+
+## Execution Steps:
+- Start MySQL database server
+- Start GlassFish server
+- Publish/deploy this web service
+- Test **READ** of data using the following URLs:
+    - [Fetch customer with: *ID = 1*](http://localhost:8080/RESTfulExampleJAX-RS/rest/customers/1)
+    - [Fetch customers with: *city = Sacramento*](http://localhost:8080/RESTfulExampleJAX-RS/rest/customers/findCustomersByCity/Sacramento)
+- Test **CREATE** or **UPDATE** of records using *Google's REST Console* as follows:
+    - Target -> Request URI = `http://localhost:8080/RESTfulExampleJAX-RS/rest/customers`
+    - Target -> Request Method = `POST` or `PUT`
+    - Body -> Content Headers -> Content-Type = `application/xml`
+    - Body -> Request Payload -> Raw Body = `<customer><address><city>CITY-NAME</city><id>100</id><street>123 YOUR STREET</street></address><firstName>FIRST</firstName><id>100</id><lastName>LAST</lastName><phoneNumbers><id>100</id><num>916-123-456</num><type>HOME</type></phoneNumbers><phoneNumbers><id>101</id><num>800-555-1212</num><type>WORK</type></phoneNumbers></customer>`
+    - *SEND* the request and the results should read: *Response Headers -> Status Code: 204*
+- Test **DELETE** of a record using using *Google's REST Console* as follows:
+    - Target -> Request URI = `http://localhost:8080/RESTfulExampleJAX-RS/rest/customers/100`
+    - Target -> Request Method = `DELETE`
+    - Body -> Content Headers -> Content-Type = *Clear checkbox*
+    - Body -> Request Payload -> Raw Body = *Clear checkbox*
+    - *SEND* the request and the results should read: *Response Headers -> Status Code: 204*
+        
+
+## References:
+
+This project is based upon code found at:
+
+- <em>Creating a RESTful Web Service:</em> http://blog.bdoughan.com/2010/08/creating-restful-web-service-part-15.html
+ 
 ## Issues:
 
 ### Ping error in GlassFish when creating JDBC connection pool for MySQL 
 - <b>ERROR MSG:</b>
-	Ping Connection Pool failed for CustomerService. Class name is wrong or classpath is not set for : com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource Please check the server.log for more details.
+	<em>Ping Connection Pool failed for CustomerService. Class name is wrong or classpath is not set for : com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource Please check the server.log for more details.</em>
 - <b>RESOLUTION:</b>
   COPIED: mysql-connector-java-5.1.36.jar
   INTO:	C:\Users\Sean\Desktop\sandbox\glassfish4\glassfish\domains\domain1\lib\ext
