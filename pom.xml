@@ -26,13 +26,20 @@
     </plugins>
   </build>
   <dependencies>
-<!-- One stop shopping    
+	<!-- Master Java EE dependency -->
   	<dependency>
   		<groupId>javax</groupId>
   		<artifactId>javaee-api</artifactId>
   		<version>7.0</version>
   	</dependency>
- -->  	
+	<!-- Following required for JPA provider's annotation: @XmlInverseReference -->
+	<dependency>
+		<groupId>org.eclipse.persistence</groupId>
+		<artifactId>eclipselink</artifactId>
+		<version>2.6.0</version>
+	</dependency>
+	<!-- Following dependencies are an alternative to above  -->
+<!--
 	<dependency>
 		<groupId>org.eclipse.persistence</groupId>
 		<artifactId>eclipselink</artifactId>
@@ -53,6 +60,7 @@
 		<artifactId>jersey-container-servlet</artifactId>
 		<version>2.10.4</version>
 	</dependency>
+-->
   </dependencies>
   <packaging>war</packaging>
 </project>
