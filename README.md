@@ -7,12 +7,16 @@ The following **Java EE** technologies are used in this project:
 - **JAX-RS:** The Java API for RESTful Web Services 
 - **JPA:** Java Persistence Architecture
 - **JAXB:** Java Architecture for XML Binding
+- **EclipseLink:** The **JPA** *provider* responsible for ORM and Persistence. Alternates include Hibernate, OpenJPA, etc. 
+- **EclipseLink MOXy:** The **JAXB** *provider* (for **XML** binding) via the `jaxb.properties` file. Also defines annotation: `@XmlInverseReference` 
 - **EJB:** Enterprise JavaBeans
-- **JDBC Connection Pools** and **JDBC Resource** on **GlassFish Server v4.1** 
+- **JDBC Connection Pools (DBCP)** and **JDBC Resource** on **GlassFish Server v4.1** 
 
 ## Execution Steps:
 - Start MySQL database server
 - Start GlassFish server
+- Create/configure: *JDBC Connection Pool* (on GlassFish)
+- Create/configure: *JDBC Resource* (on GlassFish)
 - Publish/deploy this web service
 - Test **READ** of data using the following URLs:
     - [Fetch customer with: *ID = 1*](http://localhost:8080/RESTfulExampleJAX-RS/rest/customers/1)
