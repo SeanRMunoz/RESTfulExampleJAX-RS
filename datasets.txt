@@ -11,6 +11,14 @@ Use Google's REST Console as follows to ADD sample data:
 
 <customer><address><city>Rio Vista</city><street>123 Sample Circle</street></address><firstName>JOHN</firstName><lastName>DOE</lastName><phoneNumbers><num>808-555-1212</num><type>HOME</type></phoneNumbers></customer>
 
+<!-- OK: NO phone numbers is allowed -->
+<customer><address><city>Sacramento</city><street>123 Your Street</street></address><firstName>MRS</firstName><lastName>NO-PHONES</lastName></customer>
+
+<!-- WARNING: TWO addresses, but only room for ONE -->
+<customer><address><city>FIRST-CITY</city><street>123 Your Street</street></address><address><city>SECOND-CITY</city><street>123 Your Street</street></address><firstName>ANGELA</firstName><lastName>JENKINS</lastName><phoneNumbers><num>916-321-1212</num><type>Work</type></phoneNumbers></customer>
+
+<!-- FAIL: NO address, but it's required -->
 <customer><firstName>MR</firstName><lastName>No ADDRESS</lastName><phoneNumbers><num>916-321-1212</num><type>Work</type></phoneNumbers></customer>
 
-<customer><address><city>FIRST-CITY</city><street>123 Your Street</street></address><address><city>SECOND-CITY</city><street>123 Your Street</street></address><firstName>ANGELA</firstName><lastName>JENKINS</lastName><phoneNumbers><num>916-321-1212</num><type>Work</type></phoneNumbers></customer>
+<!-- FAIL: EXCEEDS MAX phone numbers -->
+<customer><address><city>Sacramento</city><street>123 Know Way</street></address><firstName>MISS</firstName><lastName>TOO-MANY-PHONES</lastName><phoneNumbers><num>916-555-8888</num><type>Work</type></phoneNumbers><phoneNumbers><num>800-567-1525</num><type>TOLL-FREE</type></phoneNumbers><phoneNumbers><num>916-555-8888</num><type>Work</type></phoneNumbers><phoneNumbers><num>800-567-1525</num><type>TOLL-FREE</type></phoneNumbers></customer>

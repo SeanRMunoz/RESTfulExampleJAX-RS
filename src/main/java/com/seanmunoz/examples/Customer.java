@@ -12,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
@@ -33,9 +35,11 @@ public class Customer implements Serializable {
    @Column(name="LAST_NAME")
    private String lastName;
 
+   @NotNull
    @OneToOne(mappedBy="customer", cascade={CascadeType.ALL})
    private Address address;
 
+   @Size(max=3)
    @OneToMany(mappedBy="customer", cascade={CascadeType.ALL})
    private Set<PhoneNumber> phoneNumbers;
 
