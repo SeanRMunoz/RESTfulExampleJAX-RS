@@ -2,15 +2,14 @@
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
 	<persistence-unit name="RESTfulExampleJAX-RS" transaction-type="JTA">
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-		<jta-data-source>CustomerServiceRes</jta-data-source>
+		<jta-data-source>TestRest</jta-data-source>
 		<class>com.seanmunoz.examples.Address</class>
 		<class>com.seanmunoz.examples.Customer</class>
 		<class>com.seanmunoz.examples.PhoneNumber</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
 			<property name="eclipselink.ddl-generation" value="create-tables"/>
-			<property name="javax.persistence.schema-generation.create-database-schemas" value="false"/>
-			<property name="eclipselink.ddl-generation.output-mode" value="both"/>
+			<property name="eclipselink.ddl-generation.output-mode" value="database"/>
 		</properties>
 	</persistence-unit>
 </persistence>
