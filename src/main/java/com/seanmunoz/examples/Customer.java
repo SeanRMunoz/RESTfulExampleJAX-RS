@@ -6,6 +6,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -22,6 +24,7 @@ public class Customer implements Serializable {
    private static final long serialVersionUID = 1L;
 
    @Id
+   @GeneratedValue(strategy=GenerationType.AUTO)
    private long id;
 
    @Column(name="FIRST_NAME")
