@@ -4,12 +4,12 @@ Example project that creates a _**RESTful Web Service**_ using **Java EE** techn
 ## Technologies Used:
 The following **Java EE** technologies are used in this project:
 
+- **EJB:** Enterprise JavaBeans
 - **JAX-RS:** The Java API for RESTful Web Services 
 - **JPA:** Java Persistence Architecture
-- **JAXB:** Java Architecture for XML Binding
-- **EclipseLink:** The **JPA** *provider* responsible for ORM and Persistence. Alternates include Hibernate, OpenJPA, etc. 
-- **EclipseLink MOXy:** The **JAXB** *provider* (for **XML** binding) via the `jaxb.properties` file. Also defines annotation: `@XmlInverseReference` 
-- **EJB:** Enterprise JavaBeans
+- **JAXB:** Java Architecture for **XML** & **JSON** Bindings
+- **EclipseLink:** The **JPA** *provider* responsible for ORM and Persistence. Alternates include *Hibernate*, *OpenJPA*, etc. 
+- **EclipseLink MOXy:** The **JAXB** *provider* (for **XML** & **JSON** bindings) via the `jaxb.properties` file. Also defines annotation: `@XmlInverseReference` 
 - **JDBC Connection Pools (DBCP)** and **JDBC Resource** on **GlassFish Server v4.1** 
 
 ## Execution Steps:
@@ -24,7 +24,7 @@ The following **Java EE** technologies are used in this project:
 - Test **CREATE** or **UPDATE** of records using *Google's REST Console* as follows:
     - Target -> Request URI = `http://localhost:8080/RESTfulExampleJAX-RS/rest/customers`
     - Target -> Request Method = `POST` or `PUT`
-    - Body -> Content Headers -> Content-Type = `application/xml`
+    - Body -> Content Headers -> Content-Type = `application/xml` or `application/json` 
     - Body -> Request Payload -> Raw Body = `<customer><address><city>CITY-NAME</city><id>100</id><street>123 YOUR STREET</street></address><firstName>FIRST</firstName><id>100</id><lastName>LAST</lastName><phoneNumbers><id>100</id><num>916-123-456</num><type>HOME</type></phoneNumbers><phoneNumbers><id>101</id><num>800-555-1212</num><type>WORK</type></phoneNumbers></customer>`
     - *SEND* the request and the results should read: *Response Headers -> Status Code: 204*
 - Test **DELETE** of a record using using *Google's REST Console* as follows:

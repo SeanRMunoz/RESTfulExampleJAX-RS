@@ -1,5 +1,5 @@
 /**
- * 
+ * Stateless session bean for entity classes
  */
 package com.seanmunoz.examples;
 
@@ -33,20 +33,27 @@ public class CustomerService {
     EntityManager entityManager;
 
     @POST
-    @Consumes(MediaType.APPLICATION_XML)
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public void create(Customer customer) {
         entityManager.persist(customer);
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_XML)
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("{id}")
     public Customer read(@PathParam("id") long id) {
         return entityManager.find(Customer.class, id);
     }
 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/json/{id}")
+    public Customer readJSON(@PathParam("id") long id) {
+    	return entityManager.find(Customer.class, id);
+    }
+    
     @PUT
-    @Consumes(MediaType.APPLICATION_XML)
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public void update(Customer customer) {
         entityManager.merge(customer);
     }
@@ -61,7 +68,7 @@ public class CustomerService {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_XML)
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("findCustomersByCity/{city}")
     public List<Customer> findCustomersByCity(@PathParam("city") String city) {
         Query query = entityManager.createNamedQuery("findCustomersByCity");
