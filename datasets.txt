@@ -1,0 +1,16 @@
+Use Google's REST Console as follows to ADD sample data:
+ 
+	Target -> Request URI = http://localhost:8080/RESTfulExampleJAX-RS/rest/customers
+	Target -> Request Method = POST
+	Body -> Content Headers -> Content-Type = application/xml
+	Body -> Request Payload -> Raw Body = [Paste following XML data sets, one at a time]
+
+<customer><address><city>Sacramento</city><street>123 Your Street</street></address><firstName>JANE</firstName><lastName>SMITH</lastName><phoneNumbers><num>916-321-1212</num><type>Work</type></phoneNumbers></customer>
+
+<customer><address><city>Sacramento</city><street>123 ANY CIRCLE</street></address><firstName>FRANK</firstName><lastName>ZAPPA</lastName><phoneNumbers><num>916-555-8888</num><type>Work</type></phoneNumbers><phoneNumbers><num>800-567-1525</num><type>TOLL-FREE</type></phoneNumbers></customer>
+
+<customer><address><city>Rio Vista</city><street>123 Sample Circle</street></address><firstName>JOHN</firstName><lastName>DOE</lastName><phoneNumbers><num>808-555-1212</num><type>HOME</type></phoneNumbers></customer>
+
+<customer><firstName>MR</firstName><lastName>No ADDRESS</lastName><phoneNumbers><num>916-321-1212</num><type>Work</type></phoneNumbers></customer>
+
+<customer><address><city>FIRST-CITY</city><street>123 Your Street</street></address><address><city>SECOND-CITY</city><street>123 Your Street</street></address><firstName>ANGELA</firstName><lastName>JENKINS</lastName><phoneNumbers><num>916-321-1212</num><type>Work</type></phoneNumbers></customer>
