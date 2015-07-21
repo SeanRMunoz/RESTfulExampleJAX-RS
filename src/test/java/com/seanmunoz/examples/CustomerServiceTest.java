@@ -1,10 +1,6 @@
 package com.seanmunoz.examples;
 
 import static org.eclipse.persistence.config.PersistenceUnitProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -15,6 +11,7 @@ import java.util.Map;
 import javax.ejb.embeddable.EJBContainer;
 import javax.naming.NamingException;
 import javax.persistence.Persistence;
+import javax.validation.ConstraintViolationException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -28,6 +25,10 @@ import org.junit.Test;
  */
 
 /**
+ * Unit test class (integration test, really) for the CustomerService EJB class.
+ * Uses an embedded EJBContainer to allow standalone testing of EJB persistence
+ * and validation constraints.
+ * 
  * @author Sean Munoz
  *
  */
@@ -145,6 +146,68 @@ public class CustomerServiceTest {
 		
 	}
 
+	/**
+	 * Test NULL address, a Bean Validation constraint for method
+	 * {@link com.seanmunoz.examples.CustomerService#create(com.seanmunoz.examples.Customer)}.
+	 * that is set in the entity bean's field {@link Customer#address}.
+	 * 
+	 * @throws NamingException
+	 */
+	@Test
+	public void testCreate_ConstraintAddress() throws NamingException {
+		CustomerService instance = (CustomerService) container.getContext()
+				.lookup(EJB_JNDI_NAME);
+		assertNotNull("Valid EJB instance created", instance);
+		
+		// REMOVE customer's address, which should trigger a Bean Validation constraint
+		validTestCustomer.setAddress(null);
+		Customer invalidCustomer = validTestCustomer;	// Strictly for readability
+        try {
+    		instance.create(invalidCustomer);
+            fail("Should NOT persist a customer with NULL address.");
+        } catch (Exception e) {
+        	System.out.println("Expected exception caught during persist attempt of invalid record.");
+			assertTrue("Expected exception: ConstraintViolationException",
+					e.getCause() instanceof ConstraintViolationException);
+        }
+		assertNull("DO NOT persist a customer with NULL address.", instance.read(invalidCustomer.getId()));
+	}
+	
+	/**
+	 * Test EXCEED MAX phone numbers, which is a Bean Validation constraint for method
+	 * {@link com.seanmunoz.examples.CustomerService#create(com.seanmunoz.examples.Customer)}
+	 * that is set in the entity bean's field {@link Customer#phoneNumbers}.
+	 * 
+	 * @throws NamingException
+	 */
+	@Test
+	public void testCreate_ConstraintPhoneNumbers() throws NamingException {
+		CustomerService instance = (CustomerService) container.getContext()
+				.lookup(EJB_JNDI_NAME);
+		assertNotNull("Valid EJB instance created", instance);
+		
+		// ADD more phone numbers to trigger a Bean Validation constraint
+		PhoneNumber p;
+		p = new PhoneNumber();
+		p.setType("Cell");
+		p.setNum("123-456-7890");
+		validTestCustomer.getPhoneNumbers().add(p);
+		p = new PhoneNumber();
+		p.setType("Fax");
+		p.setNum("555-555-5555");
+		validTestCustomer.getPhoneNumbers().add(p);
+		Customer invalidCustomer = validTestCustomer;	// Strictly for readability
+		try {
+			instance.create(invalidCustomer);
+			fail("Should NOT persist a customer that exceeds MAX phone numbers.");
+		} catch (Exception e) {
+        	System.out.println("Expected exception caught during persist attempt of invalid record.");
+			assertTrue("Expected exception: ConstraintViolationException",
+					e.getCause() instanceof ConstraintViolationException);
+		}
+		assertNull("DO NOT persist a customer that exceeds MAX phone numbers.", instance.read(invalidCustomer.getId()));
+	}
+	
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#read(long)}.
 	 * @throws NamingException 
