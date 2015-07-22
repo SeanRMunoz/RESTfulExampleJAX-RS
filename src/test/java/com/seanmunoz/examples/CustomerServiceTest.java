@@ -113,16 +113,13 @@ public class CustomerServiceTest {
 		PhoneNumber p;
 		p = new PhoneNumber();
 		p.setType("Work");
-		p.setNum("800-555-1212");
+		p.setNum("800-555-" + (int)(Math.random()*9_000+1_000));
 		validTestCustomer.getPhoneNumbers().add(p);
 		p = new PhoneNumber();
 		p.setType("Home");
-		p.setNum("916-555-1212");
+		p.setNum("916-555-" + (int)(Math.random()*9_000+1_000));
 		validTestCustomer.getPhoneNumbers().add(p);
-		
-		// Create an INVALID customer record...
 
-		
 	}
 
 	/**
@@ -224,16 +221,21 @@ public class CustomerServiceTest {
 				.lookup(EJB_JNDI_NAME);
 		assertNotNull("Valid EJB instance created", instance);
 
+		String firstName = validTestCustomer.getFirstName();
+		String street = validTestCustomer.getAddress().getStreet();
+		String secondPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[1])).getNum();
+
 		instance.create(validTestCustomer);
 
 		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
 		assertNotNull("Read created record", createdCustomer);
 		
-		assertEquals("Name match", "JOHN", createdCustomer.getFirstName());
-		assertEquals("Street match", "123 Sample Street", createdCustomer.getAddress().getStreet());
+		assertEquals("First name match", firstName, createdCustomer.getFirstName());
+		assertEquals("Street match", street, createdCustomer.getAddress().getStreet());
 		boolean isPhoneMatch = false;
 		for (PhoneNumber phone : createdCustomer.getPhoneNumbers()) {
-			if (phone.getNum().equals("916-555-1212")) {
+			if (phone.getNum().equals(secondPhoneNumber)) {
 				isPhoneMatch = true;
 				break;
 			}
