@@ -52,6 +52,8 @@ public class CustomerServiceTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put(EJBContainer.MODULES, new File[] {
 				new File("target/classes"), new File("target/test-classes") });
+		properties.put(ECLIPSELINK_PERSISTENCE_XML, 
+                "target/test-classes/META-INF/persistence-test.xml");
 		// createEJBContainer() w/o properties works, but takes MUCH longer
 		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
