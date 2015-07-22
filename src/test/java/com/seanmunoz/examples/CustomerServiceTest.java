@@ -50,9 +50,10 @@ public class CustomerServiceTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put(EJBContainer.MODULES, new File(EJB_JAR_FILENAME));
-//		container = EJBContainer.createEJBContainer(properties);
-		container = EJBContainer.createEJBContainer();
+		properties.put(EJBContainer.MODULES, new File[] {
+				new File("target/classes"), new File("target/test-classes") });
+		// createEJBContainer() w/o properties works, but takes MUCH longer
+		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
 
 /*		
