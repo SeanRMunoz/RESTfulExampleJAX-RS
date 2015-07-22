@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.embeddable.EJBContainer;
@@ -309,10 +310,31 @@ public class CustomerServiceTest {
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByCity(java.lang.String)}.
+	 * @throws NamingException 
 	 */
 	@Test
-	public void testFindCustomersByCity() {
-		fail("Not yet implemented");
+	public void testFindCustomersByCity() throws NamingException {
+		final String uniqueCity = "Unique City Name";
+		CustomerService instance = (CustomerService) container.getContext()
+				.lookup(EJB_JNDI_NAME);
+		assertNotNull("Valid EJB instance created", instance);
+
+		// CREATE a valid customer with a unique city
+		validTestCustomer.getAddress().setCity(uniqueCity);
+		instance.create(validTestCustomer);
+
+		// READ back the newly created Customer
+		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		assertNotNull("Read created record", createdCustomer);
+		
+		// QUERY for unique city and verify results
+		List<Customer> customersFound = instance.findCustomersByCity(uniqueCity);
+		// FIXME findCustomersByCity() not returning expected result,
+		// which causes the following assertion to fail. Why??
+		assertEquals("Found matching record", 1, customersFound.size());
+		assertEquals("Unique city name matches", uniqueCity, customersFound
+				.get(0).getAddress().getCity());
+
 	}
 
 }
