@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -17,10 +18,15 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
-@NamedQuery(name = "findCustomersByCity", 
-           query = "SELECT c " +
-                   "FROM Customer c " +
-                   "WHERE c.address.city = :city")
+@NamedQueries({
+	@NamedQuery(name = "findCustomersByCity", 
+		query = "SELECT c " +
+				"FROM Customer c " +
+				"WHERE c.address.city = :city"),
+	@NamedQuery(name = "getAllCustomers", 
+		query = "SELECT c " +
+				"FROM Customer c ")
+})
 @XmlRootElement
 public class Customer implements Serializable {
    private static final long serialVersionUID = 1L;

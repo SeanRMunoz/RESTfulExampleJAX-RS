@@ -76,4 +76,13 @@ public class CustomerService {
         return query.getResultList();
     }
 
+	@GET
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("/all")
+    @SuppressWarnings("unchecked")
+    public List<Customer> getAllCustomers() {
+    	Query query = entityManager.createNamedQuery("getAllCustomers");
+    	return query.getResultList();
+    }
+    
 }
