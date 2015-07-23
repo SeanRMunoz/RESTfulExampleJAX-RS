@@ -1,9 +1,13 @@
 package com.seanmunoz.examples;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +39,9 @@ import org.junit.Test;
  */
 public class CustomerServiceTest {
 
-//	private static final String EJB_JAR_FILENAME = "target/";
+	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
+	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");
+	private static final Path PERSISTENCE_TEST = Paths.get("target/test-classes/META-INF/persistence-test.xml");
 	private static final String EJB_JAR_FILENAME = "target/classes";
 	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
 	private static final String JTA_UNIT_NAME = "RESTfulExampleJAX-RS";
@@ -49,11 +55,14 @@ public class CustomerServiceTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
+		// Use alternate persistence.xml for TEST
+		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
+		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
+		
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put(EJBContainer.MODULES, new File[] {
 				new File("target/classes"), new File("target/test-classes") });
-		properties.put(ECLIPSELINK_PERSISTENCE_XML, 
-                "target/test-classes/META-INF/persistence-test.xml");
 		// createEJBContainer() w/o properties works, but takes MUCH longer
 		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
@@ -93,6 +102,9 @@ public class CustomerServiceTest {
 	public static void tearDownAfterClass() throws Exception {
 		container.close();
 		System.out.println("TEARDOWN: Closing the container.");
+		
+		// Restore original persistence.xml for production
+		Files.move(PERSISTENCE_TEMP, PERSISTENCE_PROD, REPLACE_EXISTING);
 	}
 
 	/**

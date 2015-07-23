@@ -62,3 +62,11 @@ Also needed to add a POM dependency for runtime:
 
 - <code>org.glassfish.jersey.containers:jersey-container-servlet:2.10.4</code>
 
+### Unit/Integration Test - NEED alternate *persistence.xml* for *Embedded GlassFish*
+- **PROBLEM:** This project uses *Embedded GlassFish* for unit/integration testing to avoid mocking EJB container services, while still allowing tests to run standalone by embedding container and database resources. During Unit Test, if Embedded GlassFish uses the production version of `persistence.xml` it cannot properly create the EJB container because the `jta-data-source` of `TestRest` is NOT present, nor should it be at test time. Removing `jta-data-source` from  `persistence.xml` allows Embedded GlassFish to properly create the EJB container using a default data source via embedded Derby... all is good and the tests run as expected. 
+
+- **RESOLUTION:**
+Try as I might, I could NOT get Embedded GlassFish to use anything other than the `persistence.xml` located at: `src/main/resources/META-INF/persistence.xml`  So, as a work-around solution, a separate test version was created at: `src/test/resources/META-INF/persistence-test.xml` **without** the `jta-data-source` property. The `@BeforeClass` and `@AfterClass` methods of the unit test class were updated to take care of swapping the test and production versions of `persistence.xml`. **NOTE:** The files being manipulated by the test class are NOT the originals, but rather the generated versions that are located in `/target` directory.   
+
+- **LINKS:** This work-around method was chosen over using a Maven plugin based solution since I wanted to preserve using Eclipse's feature: *Run as JUnit Test*. The following answer on Stack Overflow explains this issue and the workings of Embedded GlassFish:
+    - [Running tests using Embedded Glassfish](http://stackoverflow.com/a/6740944/5046445) 

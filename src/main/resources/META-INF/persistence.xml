@@ -3,9 +3,7 @@
 	<persistence-unit name="RESTfulExampleJAX-RS" transaction-type="JTA">
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<!-- DO NOT specify jta-data-source for unit testing  -->
-<!-- 		
 		<jta-data-source>TestRest</jta-data-source>
- -->		
 		<class>com.seanmunoz.examples.Address</class>
 		<class>com.seanmunoz.examples.Customer</class>
 		<class>com.seanmunoz.examples.PhoneNumber</class>
