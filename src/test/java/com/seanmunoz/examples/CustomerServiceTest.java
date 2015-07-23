@@ -377,5 +377,31 @@ public class CustomerServiceTest {
 				.get(0).getAddress().getCity());
 
 	}
+	
+	/**
+	 * Test method for {@link com.seanmunoz.examples.CustomerService#getAllCustomers()}.
+	 * @throws NamingException
+	 */
+	@Test
+	public void testGetAllCustomers() throws NamingException {
+		CustomerService instance = (CustomerService) container.getContext()
+				.lookup(EJB_JNDI_NAME);
+		assertNotNull("Valid EJB instance created", instance);
+
+		// QUERY all customers 
+		List<Customer> allCustomers = instance.getAllCustomers();
+		int customerCount = allCustomers.size();
+
+		// CREATE a new customer
+		instance.create(validTestCustomer);
+
+		// QUERY all customers again and compare count 
+		allCustomers = instance.getAllCustomers();
+		System.out.println("Total customer count before: " + customerCount
+				+ " and after: " + allCustomers.size());
+		assertEquals("Customer count increase by ONE", customerCount + 1,
+				allCustomers.size());
+		
+	}
 
 }
