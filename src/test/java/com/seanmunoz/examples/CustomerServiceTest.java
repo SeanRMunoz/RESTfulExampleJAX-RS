@@ -257,10 +257,34 @@ public class CustomerServiceTest {
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#readJSON(long)}.
+	 * @throws NamingException 
 	 */
 	@Test
-	public void testReadJSON() {
-		fail("Not yet implemented");
+	public void testReadJSON() throws NamingException {
+		CustomerService instance = (CustomerService) container.getContext()
+				.lookup(EJB_JNDI_NAME);
+		assertNotNull("Valid EJB instance created", instance);
+
+		String lastName = validTestCustomer.getLastName();
+		String city = validTestCustomer.getAddress().getCity();
+		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[0])).getNum();
+
+		instance.create(validTestCustomer);
+
+		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		assertNotNull("Read created record", createdCustomer);
+		
+		assertEquals("Last name match", lastName, createdCustomer.getLastName());
+		assertEquals("City match", city, createdCustomer.getAddress().getCity());
+		boolean isPhoneMatch = false;
+		for (PhoneNumber phone : createdCustomer.getPhoneNumbers()) {
+			if (phone.getNum().equals(firstPhoneNumber)) {
+				isPhoneMatch = true;
+				break;
+			}
+		}
+		assertEquals("Phone match", true, isPhoneMatch);
 	}
 
 	/**
