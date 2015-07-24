@@ -32,7 +32,10 @@ public class PhoneNumber implements Serializable {
     @JoinColumn(name="ID_CUSTOMER")
     private Customer customer;
  
-    public long getId() {
+    public PhoneNumber() {
+	}
+
+public long getId() {
         return this.id;
     }
  

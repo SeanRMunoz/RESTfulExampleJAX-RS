@@ -49,6 +49,9 @@ public class Customer implements Serializable {
    @OneToMany(mappedBy="customer", cascade={CascadeType.ALL})
    private Set<PhoneNumber> phoneNumbers;
 
+   public Customer() {
+	}
+
    public long getId() {
        return this.id;
    }
