@@ -1,13 +1,14 @@
 package com.seanmunoz.examples;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+//import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Collection;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,9 @@ import javax.ejb.embeddable.EJBContainer;
 import javax.naming.NamingException;
 import javax.persistence.Persistence;
 import javax.validation.ConstraintViolationException;
+
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.openejb.OpenEjbContainer;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -39,11 +43,12 @@ import org.junit.Test;
  */
 public class CustomerServiceTest {
 
-	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
-	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");
-	private static final Path PERSISTENCE_TEST = Paths.get("target/test-classes/META-INF/persistence-test.xml");
+//	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
+//	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");
+//	private static final Path PERSISTENCE_TEST = Paths.get("target/test-classes/META-INF/persistence-test.xml");
 	private static final String EJB_JAR_FILENAME = "target/classes";
-	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
+//	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
+	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/CustomerService";
 	private static final String JTA_UNIT_NAME = "RESTfulExampleJAX-RS";
 	private static EJBContainer container;
 	private static int recordCount = 0;
@@ -57,12 +62,15 @@ public class CustomerServiceTest {
 	public static void setUpBeforeClass() throws Exception {
 		
 		// Use alternate persistence.xml for TEST
-		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
-		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
+//		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
+//		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
 		
 		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put(EJBContainer.MODULES, new File[] {
-				new File("target/classes"), new File("target/test-classes") });
+//		properties.put(EJBContainer.MODULES, new File[] {
+//				new File("target/classes"), new File("target/test-classes") });
+		properties.put(EJBContainer.MODULES, new File("target/classes"));
+//		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", "8080");
+		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
 		// createEJBContainer() w/o properties works, but takes MUCH longer
 		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
@@ -104,7 +112,7 @@ public class CustomerServiceTest {
 		System.out.println("TEARDOWN: Closing the container.");
 		
 		// Restore original persistence.xml for production
-		Files.move(PERSISTENCE_TEMP, PERSISTENCE_PROD, REPLACE_EXISTING);
+//		Files.move(PERSISTENCE_TEMP, PERSISTENCE_PROD, REPLACE_EXISTING);
 	}
 
 	/**
@@ -125,11 +133,11 @@ public class CustomerServiceTest {
 		PhoneNumber p;
 		p = new PhoneNumber();
 		p.setType("Work");
-		p.setNum("800-555-" + (int)(Math.random()*9_000+1_000));
+		p.setNum("800-555-" + (int)(Math.random()*9000+1000));
 		validTestCustomer.getPhoneNumbers().add(p);
 		p = new PhoneNumber();
 		p.setType("Home");
-		p.setNum("916-555-" + (int)(Math.random()*9_000+1_000));
+		p.setNum("916-555-" + (int)(Math.random()*9000+1000));
 		validTestCustomer.getPhoneNumbers().add(p);
 
 	}
@@ -272,7 +280,11 @@ public class CustomerServiceTest {
 
 		instance.create(validTestCustomer);
 
-		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		// GET using JAX-RS web client
+	    Customer createdCustomer  = WebClient.create("http://localhost:4204")
+	    		.path("/RESTfulExampleJAX-RS/customers/json/" + validTestCustomer.getId())
+				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+	    		.get(Customer.class);
 		assertNotNull("Read created record", createdCustomer);
 		
 		assertEquals("Last name match", lastName, createdCustomer.getLastName());
@@ -389,14 +401,29 @@ public class CustomerServiceTest {
 		assertNotNull("Valid EJB instance created", instance);
 
 		// QUERY all customers 
-		List<Customer> allCustomers = instance.getAllCustomers();
-		int customerCount = allCustomers.size();
+		int customerCount = instance.getAllCustomers().size();
 
 		// CREATE a new customer
 		instance.create(validTestCustomer);
 
-		// QUERY all customers again and compare count 
-		allCustomers = instance.getAllCustomers();
+		// QUERY all customers again and compare count using JAX-RS client
+		Collection<? extends Customer> allCustomers = WebClient
+				.create("http://localhost:4204")
+				.path("/RESTfulExampleJAX-RS/customers/all")
+				.accept(javax.ws.rs.core.MediaType.APPLICATION_XML)
+				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+				.getCollection(Customer.class);
+		
+		// PRINT the list of customers
+		for (Customer customer : allCustomers) {
+		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
+			System.out.println("Address: " + customer.getAddress().getStreet()
+					+ ", " + customer.getAddress().getCity());
+			for (PhoneNumber p : customer.getPhoneNumbers()) {
+				System.out.println("Phone, " + p.getType() + ": " + p.getNum());
+			}
+		}
+		
 		System.out.println("Total customer count before: " + customerCount
 				+ " and after: " + allCustomers.size());
 		assertEquals("Customer count increase by ONE", customerCount + 1,
