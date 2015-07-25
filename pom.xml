@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.seanmunoz.examples</groupId>
   <artifactId>RESTfulExampleJAX-RS</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3-SNAPSHOT</version>
   <name>RESTfulExampleJAX-RS</name>
   <description>RESTful service example using JAX-RS</description>
 
