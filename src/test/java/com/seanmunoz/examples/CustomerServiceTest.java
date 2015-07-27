@@ -114,7 +114,9 @@ public class CustomerServiceTest {
 	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		container.close();
+		if (container != null) {
+			container.close();
+		}
 		System.out.println("TEARDOWN: Closing the container.");
 		
 		// Restore original persistence.xml for production
