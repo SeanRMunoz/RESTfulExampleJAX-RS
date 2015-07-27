@@ -70,40 +70,16 @@ public class CustomerServiceTest {
 //		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
 		
 		Map<String, Object> properties = new HashMap<String, Object>();
+//		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", "8080");
 //		properties.put(EJBContainer.MODULES, new File[] {
 //				new File("target/classes"), new File("target/test-classes") });
 		properties.put(EJBContainer.MODULES, new File("target/classes"));
-//		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", "8080");
 		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
 		properties.put("httpejbd.port", URL_PORT);
 		properties.put("httpejbd.bind", URL_HOST);
 		// createEJBContainer() w/o properties works, but takes MUCH longer
 		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
-
-/*		
-		// Ensure RESOURCE_LOCAL transactions is used.
-		properties.put(TRANSACTION_TYPE,
-		  PersistenceUnitTransactionType.RESOURCE_LOCAL.name());
-		 
-		// Configure the internal EclipseLink connection pool
-		properties.put(JDBC_DRIVER, "com.mysql.jdbc.Driver");
-		properties.put(JDBC_URL, "jdbc:mysql://localhost:3306/testrest");
-		properties.put(JDBC_USER, "testrest");
-		properties.put(JDBC_PASSWORD, "craw4ord");
-		properties.put(JDBC_READ_CONNECTIONS_MIN, "1");
-		properties.put(JDBC_WRITE_CONNECTIONS_MIN, "1");
-		 
-		// Configure logging. FINE ensures all SQL is shown
-		properties.put(LOGGING_LEVEL, "FINE");
-		 
-		// Ensure that no server-platform is configured
-		properties.put(TARGET_SERVER, TargetServer.None);
-		
-		Persistence.
-		createEntityManagerFactory(JTA_UNIT_NAME, properties);
-				
-*/
 		
 		System.out.println("STARTUP: Opening the container...");
 
