@@ -113,4 +113,14 @@
 		<developerConnection>scm:git:file:///X:/SourceCode/Java/Java-EE/RESTfulExampleJAX-RS/</developerConnection>
 		<tag>RESTfulExampleJAX-RS-0.0.2</tag>
 	</scm>
+	<distributionManagement>
+		<repository>
+			<id>localhost</id>
+			<url>file://${basedir}/target/repo/</url>
+		</repository>
+		<snapshotRepository>
+			<id>localhost</id>
+			<url>file://${basedir}/target/snapshot-repo/</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
