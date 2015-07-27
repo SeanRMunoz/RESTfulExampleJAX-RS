@@ -50,6 +50,10 @@ public class CustomerServiceTest {
 //	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
 	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/CustomerService";
 	private static final String JTA_UNIT_NAME = "RESTfulExampleJAX-RS";
+	private static final String URL_HOST = "localhost";
+	private static final String URL_PORT = "4204";
+	private static final String URL_BASE = "http://" + URL_HOST + ":" + URL_PORT;
+	private static final String URL_PATH = "/RESTfulExampleJAX-RS/customers";
 	private static EJBContainer container;
 	private static int recordCount = 0;
 	private Customer validTestCustomer;
@@ -71,6 +75,8 @@ public class CustomerServiceTest {
 		properties.put(EJBContainer.MODULES, new File("target/classes"));
 //		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", "8080");
 		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
+		properties.put("httpejbd.port", URL_PORT);
+		properties.put("httpejbd.bind", URL_HOST);
 		// createEJBContainer() w/o properties works, but takes MUCH longer
 		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
@@ -281,8 +287,8 @@ public class CustomerServiceTest {
 		instance.create(validTestCustomer);
 
 		// GET using JAX-RS web client
-	    Customer createdCustomer  = WebClient.create("http://localhost:4204")
-	    		.path("/RESTfulExampleJAX-RS/customers/json/" + validTestCustomer.getId())
+	    Customer createdCustomer  = WebClient.create(URL_BASE)
+	    		.path(URL_PATH + "/json/" + validTestCustomer.getId())
 				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
 	    		.get(Customer.class);
 		assertNotNull("Read created record", createdCustomer);
@@ -408,8 +414,8 @@ public class CustomerServiceTest {
 
 		// QUERY all customers again and compare count using JAX-RS client
 		Collection<? extends Customer> allCustomers = WebClient
-				.create("http://localhost:4204")
-				.path("/RESTfulExampleJAX-RS/customers/all")
+				.create(URL_BASE)
+				.path(URL_PATH + "/all")
 				.accept(javax.ws.rs.core.MediaType.APPLICATION_XML)
 				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
 				.getCollection(Customer.class);
