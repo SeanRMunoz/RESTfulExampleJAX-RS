@@ -1,7 +1,6 @@
 package com.seanmunoz.examples;
 
 //import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.eclipse.persistence.config.PersistenceUnitProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -16,7 +15,6 @@ import java.util.Map;
 
 import javax.ejb.embeddable.EJBContainer;
 import javax.naming.NamingException;
-import javax.persistence.Persistence;
 import javax.validation.ConstraintViolationException;
 
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -27,11 +25,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-
-/**
- * 
- */
 
 /**
  * Unit test class (integration test, really) for the CustomerService EJB class.
@@ -46,24 +39,24 @@ public class CustomerServiceTest {
 //	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
 //	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");
 //	private static final Path PERSISTENCE_TEST = Paths.get("target/test-classes/META-INF/persistence-test.xml");
-	private static final String EJB_JAR_FILENAME = "target/classes";
 //	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
 	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/CustomerService";
-	private static final String JTA_UNIT_NAME = "RESTfulExampleJAX-RS";
 	private static final String URL_HOST = "localhost";
 	private static final String URL_PORT = "4204";
 	private static final String URL_BASE = "http://" + URL_HOST + ":" + URL_PORT;
 	private static final String URL_PATH = "/RESTfulExampleJAX-RS/customers";
 	private static EJBContainer container;
 	private static int recordCount = 0;
+	private static CustomerService customerService;
 	private Customer validTestCustomer;
-
 	
 	/**
-	 * @throws java.lang.Exception
+	 * Runs only once, BEFORE any test cases have run.
+	 * @throws NamingException
+	 * @throws Exception
 	 */
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() throws NamingException, Exception {
 		
 		// Use alternate persistence.xml for TEST
 //		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
@@ -77,36 +70,44 @@ public class CustomerServiceTest {
 		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
 		properties.put("httpejbd.port", URL_PORT);
 		properties.put("httpejbd.bind", URL_HOST);
+		System.out.println("STARTUP: Opening the container...");
+
 		// createEJBContainer() w/o properties works, but takes MUCH longer
 		container = EJBContainer.createEJBContainer(properties);
 		assertNotNull("Valid EJB container created", container);
-		
-		System.out.println("STARTUP: Opening the container...");
+
+		// Lookup the bean class using global JNDI name
+		customerService = (CustomerService) container.getContext()
+				.lookup(EJB_JNDI_NAME);
+		assertNotNull("Valid EJB instance created", customerService);
 
 	}
 
 	/**
+	 * Runs only once, AFTER all test cases have run.
 	 * @throws java.lang.Exception
 	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+
+		System.out.println("TEARDOWN: Closing the container.");
 		if (container != null) {
 			container.close();
 		}
-		System.out.println("TEARDOWN: Closing the container.");
 		
 		// Restore original persistence.xml for production
 //		Files.move(PERSISTENCE_TEMP, PERSISTENCE_PROD, REPLACE_EXISTING);
 	}
 
 	/**
+	 * Runs BEFORE every test case.
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
 		System.out.println("BEFORE: running.");
 		
-		// Create a valid customer record
+		// Create a valid customer object
 		validTestCustomer = new Customer();
 		validTestCustomer.setFirstName("JOHN");
 		validTestCustomer.setLastName("SMITH-" + ++recordCount);
@@ -127,6 +128,7 @@ public class CustomerServiceTest {
 	}
 
 	/**
+	 * Runs AFTER every test case.
 	 * @throws java.lang.Exception
 	 */
 	@After
@@ -136,17 +138,15 @@ public class CustomerServiceTest {
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#create(com.seanmunoz.examples.Customer)}.
-	 * @throws NamingException 
 	 */
 	@Test
-	public void testCreate() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testCreate() {
 
-		instance.create(validTestCustomer);
+		// PERSIST a new customer record 
+		customerService.create(validTestCustomer);
 
-		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		// READ back the newly persisted record
+		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
 		assertNotNull("Read created record", createdCustomer);
 		
 	}
@@ -155,43 +155,36 @@ public class CustomerServiceTest {
 	 * Test NULL address, a Bean Validation constraint for method
 	 * {@link com.seanmunoz.examples.CustomerService#create(com.seanmunoz.examples.Customer)}.
 	 * that is set in the entity bean's field {@link Customer#address}.
-	 * 
-	 * @throws NamingException
 	 */
 	@Test
-	public void testCreate_ConstraintAddress() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testCreate_ConstraintAddress() {
 		
-		// REMOVE customer's address, which should trigger a Bean Validation constraint
+		// Make valid customer object invalid by removing address, 
+		// which should trigger a Bean Validation exception.
 		validTestCustomer.setAddress(null);
-		Customer invalidCustomer = validTestCustomer;	// Strictly for readability
+		Customer invalidCustomer = validTestCustomer;	// Rename for readability
         try {
-    		instance.create(invalidCustomer);
+        	// Attempt PERSIST of an invalid customer object
+    		customerService.create(invalidCustomer);
             fail("Should NOT persist a customer with NULL address.");
         } catch (Exception e) {
         	System.out.println("Expected exception caught during persist attempt of invalid record.");
 			assertTrue("Expected exception: ConstraintViolationException",
 					e.getCause() instanceof ConstraintViolationException);
         }
-		assertNull("DO NOT persist a customer with NULL address.", instance.read(invalidCustomer.getId()));
+		assertNull("DO NOT persist a customer with NULL address.", customerService.read(invalidCustomer.getId()));
 	}
 	
 	/**
 	 * Test EXCEED MAX phone numbers, which is a Bean Validation constraint for method
 	 * {@link com.seanmunoz.examples.CustomerService#create(com.seanmunoz.examples.Customer)}
 	 * that is set in the entity bean's field {@link Customer#phoneNumbers}.
-	 * 
-	 * @throws NamingException
 	 */
 	@Test
-	public void testCreate_ConstraintPhoneNumbers() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testCreate_ConstraintPhoneNumbers() {
 		
-		// ADD more phone numbers to trigger a Bean Validation constraint
+		// Make valid customer object invalid by adding more phone numbers, 
+		// which should trigger a Bean Validation exception.
 		PhoneNumber p;
 		p = new PhoneNumber();
 		p.setType("Cell");
@@ -201,38 +194,33 @@ public class CustomerServiceTest {
 		p.setType("Fax");
 		p.setNum("555-555-5555");
 		validTestCustomer.getPhoneNumbers().add(p);
-		Customer invalidCustomer = validTestCustomer;	// Strictly for readability
+		Customer invalidCustomer = validTestCustomer;	// Rename for readability
 		try {
-			instance.create(invalidCustomer);
+        	// Attempt PERSIST of an invalid customer object
+			customerService.create(invalidCustomer);
 			fail("Should NOT persist a customer that exceeds MAX phone numbers.");
 		} catch (Exception e) {
         	System.out.println("Expected exception caught during persist attempt of invalid record.");
 			assertTrue("Expected exception: ConstraintViolationException",
 					e.getCause() instanceof ConstraintViolationException);
 		}
-		assertNull("DO NOT persist a customer that exceeds MAX phone numbers.", instance.read(invalidCustomer.getId()));
+		assertNull("DO NOT persist a customer that exceeds MAX phone numbers.", customerService.read(invalidCustomer.getId()));
 	}
 	
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#read(long)}.
-	 * @throws NamingException 
 	 */
 	@Test
-	public void testRead() throws NamingException {
-		// Create the instance using the container context to look up the bean
-		// in the directory that contains the built classes
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testRead() {
 
 		String firstName = validTestCustomer.getFirstName();
 		String street = validTestCustomer.getAddress().getStreet();
 		String secondPhoneNumber = ((PhoneNumber) (validTestCustomer
 				.getPhoneNumbers().toArray()[1])).getNum();
 
-		instance.create(validTestCustomer);
+		customerService.create(validTestCustomer);
 
-		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
 		assertNotNull("Read created record", createdCustomer);
 		
 		assertEquals("First name match", firstName, createdCustomer.getFirstName());
@@ -249,22 +237,18 @@ public class CustomerServiceTest {
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#readJSON(long)}.
-	 * @throws NamingException 
 	 */
 	@Test
-	public void testReadJSON() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testReadJSON() {
 
 		String lastName = validTestCustomer.getLastName();
 		String city = validTestCustomer.getAddress().getCity();
 		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
 				.getPhoneNumbers().toArray()[0])).getNum();
 
-		instance.create(validTestCustomer);
+		customerService.create(validTestCustomer);
 
-		// GET using JAX-RS web client
+		// GET customer object using JAX-RS web client
 	    Customer createdCustomer  = WebClient.create(URL_BASE)
 	    		.path(URL_PATH + "/json/" + validTestCustomer.getId())
 				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
@@ -285,19 +269,15 @@ public class CustomerServiceTest {
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#update(com.seanmunoz.examples.Customer)}.
-	 * @throws NamingException 
 	 */
 	@Test
-	public void testUpdate() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testUpdate() {
 
-		// CREATE a valid customer
-		instance.create(validTestCustomer);
+		// PERSIST a valid customer
+		customerService.create(validTestCustomer);
 
 		// READ back the newly created Customer
-		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
 		assertNotNull("Read newly CREATED record", createdCustomer);
 
 		// UPDATE the created customer
@@ -306,10 +286,10 @@ public class CustomerServiceTest {
 		createdCustomer.getAddress().setCity("CHANGED city");
 		// TODO Update phone numbers as part of test
 //		createdCustomer.getPhoneNumbers().
-		instance.update(createdCustomer);
+		customerService.update(createdCustomer);
 		
 		// READ back the UPDATED customer
-		Customer updatedCustomer = instance.read(createdCustomerID); 
+		Customer updatedCustomer = customerService.read(createdCustomerID); 
 		assertNotNull("Read UPDATED record", createdCustomer);
 
 		// Confirm the UPDATEs
@@ -322,50 +302,42 @@ public class CustomerServiceTest {
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#delete(long)}.
-	 * @throws NamingException 
 	 */
 	@Test
-	public void testDelete() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testDelete() {
 
-		// CREATE a valid customer
-		instance.create(validTestCustomer);
+		// PERSIST a valid customer
+		customerService.create(validTestCustomer);
 		
 		// READ back the newly created Customer
-		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
 		assertNotNull("Read newly created record", createdCustomer);
 
-		// DELETE the created customer
+		// DELETE the created customer record
 		long createdCustomerID = createdCustomer.getId();
-		instance.delete(createdCustomerID);
-		createdCustomer = instance.read(createdCustomerID);
+		customerService.delete(createdCustomerID);
+		createdCustomer = customerService.read(createdCustomerID);
 		assertNull("Record deleted", createdCustomer);
 		
 	}
 
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByCity(java.lang.String)}.
-	 * @throws NamingException 
 	 */
 	@Test
-	public void testFindCustomersByCity() throws NamingException {
+	public void testFindCustomersByCity() {
 		final String uniqueCity = "Unique City Name";
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
 
-		// CREATE a valid customer with a unique city
+		// PERSIST a valid customer with a unique city
 		validTestCustomer.getAddress().setCity(uniqueCity);
-		instance.create(validTestCustomer);
+		customerService.create(validTestCustomer);
 
 		// READ back the newly created Customer
-		Customer createdCustomer = instance.read(validTestCustomer.getId()); 
+		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
 		assertNotNull("Read created record", createdCustomer);
 		
 		// QUERY for unique city and verify results
-		List<Customer> customersFound = instance.findCustomersByCity(uniqueCity);
+		List<Customer> customersFound = customerService.findCustomersByCity(uniqueCity);
 		// FIXME findCustomersByCity() not returning expected result,
 		// which causes the following assertion to fail. Why??
 //		assertEquals("Found matching record", 1, customersFound.size());
@@ -376,19 +348,15 @@ public class CustomerServiceTest {
 	
 	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#getAllCustomers()}.
-	 * @throws NamingException
 	 */
 	@Test
-	public void testGetAllCustomers() throws NamingException {
-		CustomerService instance = (CustomerService) container.getContext()
-				.lookup(EJB_JNDI_NAME);
-		assertNotNull("Valid EJB instance created", instance);
+	public void testGetAllCustomers() {
 
 		// QUERY all customers 
-		int customerCount = instance.getAllCustomers().size();
+		int customerCount = customerService.getAllCustomers().size();
 
-		// CREATE a new customer
-		instance.create(validTestCustomer);
+		// PERSIST a new customer
+		customerService.create(validTestCustomer);
 
 		// QUERY all customers again and compare count using JAX-RS client
 		Collection<? extends Customer> allCustomers = WebClient
