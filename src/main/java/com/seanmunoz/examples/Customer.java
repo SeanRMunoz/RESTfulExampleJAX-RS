@@ -25,7 +25,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 				"WHERE c.address.city = :city"),
 	@NamedQuery(name = "getAllCustomers", 
 		query = "SELECT c " +
-				"FROM Customer c ")
+				"FROM Customer c "),
+	@NamedQuery(name = "findCustomersByPhone", 
+		query = "SELECT c " +
+				"FROM Customer c " +
+				"JOIN c.phoneNumbers p " +
+				"WHERE p.num LIKE :phone")
 })
 @XmlRootElement
 public class Customer implements Serializable {

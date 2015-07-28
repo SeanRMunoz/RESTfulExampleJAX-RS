@@ -85,4 +85,16 @@ public class CustomerService {
     	return query.getResultList();
     }
     
+    @GET
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("/byPhone/{phone}")
+    public List<Customer> findCustomersByPhone(@PathParam("phone") String phone) {
+    	@SuppressWarnings("unchecked")
+		List<Customer> customers = entityManager
+				.createNamedQuery("findCustomersByPhone")
+				.setParameter("phone", phone)
+				.getResultList();
+		return customers;
+    }
+
 }
