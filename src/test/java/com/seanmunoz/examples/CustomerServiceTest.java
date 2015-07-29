@@ -68,8 +68,13 @@ public class CustomerServiceTest {
 //				new File("target/classes"), new File("target/test-classes") });
 		properties.put(EJBContainer.MODULES, new File("target/classes"));
 		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
+//		properties.put(OpenEjbContainer.APP_NAME, "RESTfulExampleJAX-RS");
+//		properties.put("java.naming.factory.initial", "org.apache.openejb.client.LocalInitialContextFactory");
+//		properties.put("openejb.deploymentId.format", "{ejbClass.simpleName}");
+//		properties.put("openejb.jndiname.format", "{deploymentId}/{interfaceClass}");
 		properties.put("httpejbd.port", URL_PORT);
 		properties.put("httpejbd.bind", URL_HOST);
+//		properties.put("eclipselink.cache.shared.default", "false");
 		System.out.println("STARTUP: Opening the container...");
 
 		// createEJBContainer() w/o properties works, but takes MUCH longer
@@ -381,6 +386,58 @@ public class CustomerServiceTest {
 		assertEquals("Customer count increase by ONE", customerCount + 1,
 				allCustomers.size());
 		
+	}
+
+	/**
+	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByPhone(String)}.
+	 */
+	@Test
+	public void testFindCustomersByPhone() {
+
+		String lastName = validTestCustomer.getLastName();
+		String city = validTestCustomer.getAddress().getCity();
+		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[0])).getNum();
+		String secondPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[1])).getNum();
+
+		// PERSIST a new customer
+		customerService.create(validTestCustomer);
+		
+		// QUERY customers with matching phone using JAX-RS client
+		Collection<? extends Customer> matchingCustomers = WebClient
+				.create(URL_BASE)
+	    		.path(URL_PATH + "/byPhone/" + secondPhoneNumber)
+				.accept(javax.ws.rs.core.MediaType.APPLICATION_XML)
+				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+				.getCollection(Customer.class);
+
+		// PRINT the list of matching customers
+		for (Customer customer : matchingCustomers) {
+		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
+			System.out.println("Address: " + customer.getAddress().getStreet()
+					+ ", " + customer.getAddress().getCity());
+			for (PhoneNumber p : customer.getPhoneNumbers()) {
+				System.out.println("Phone, " + p.getType() + ": " + p.getNum());
+			}
+		}
+		
+		// Test phone numbers generated randomly, so should only match one
+		assertNotNull("Read created record", matchingCustomers);
+		assertEquals("Found matching record", 1, matchingCustomers.size());
+
+		// Test phone numbers generated randomly, so should only match one
+		Customer firstMatchingCustomer = (Customer)(matchingCustomers.toArray())[0];
+		assertEquals("Last name match", lastName, firstMatchingCustomer.getLastName());
+		assertEquals("City match", city, firstMatchingCustomer.getAddress().getCity());
+		boolean isPhoneMatch = false;
+		for (PhoneNumber phone : firstMatchingCustomer.getPhoneNumbers()) {
+			if (phone.getNum().equals(firstPhoneNumber)) {
+				isPhoneMatch = true;
+				break;
+			}
+		}
+		assertEquals("Phone match", true, isPhoneMatch);
 	}
 
 }
