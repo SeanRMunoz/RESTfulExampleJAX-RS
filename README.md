@@ -1,5 +1,5 @@
 # RESTfulExampleJAX-RS
-Example project that creates a _**RESTful Web Service**_ using **Java EE** technologies. The service is deployed to **GlassFish** and uses a *JDBC connection pool* that ties to a *MySQL* database on the backend. 
+Example project that creates a _**RESTful Web Service**_ using various **Java EE** technologies. The production service is deployed to **GlassFish 4.1** and uses a *JDBC Connection Pool* that ties to a *MySQL* database. Unit test environment uses **embedded OpenEJB** and **JAX-RS Client API** (via **Apache CXF WebClient API**) to test EJBs in a standalone SE environment using real container services.    
 
 ## Technologies Used:
 The following **Java EE** technologies are used in this project:
@@ -10,7 +10,9 @@ The following **Java EE** technologies are used in this project:
 - **JAXB:** Java Architecture for **XML** & **JSON** Bindings
 - **EclipseLink:** The **JPA** *provider* responsible for ORM and Persistence. Alternates include *Hibernate*, *OpenJPA*, etc. 
 - **EclipseLink MOXy:** The **JAXB** *provider* (for **XML** & **JSON** bindings) via the `jaxb.properties` file. Also defines annotation: `@XmlInverseReference` 
-- **JDBC Connection Pools (DBCP)** and **JDBC Resource** on **GlassFish Server v4.1** 
+- **JDBC Connection Pools (DBCP)** and **JDBC Resource** on **GlassFish Server v4.1**
+- **Embedded OpenEJB** *(Unit test ONLY)*
+- **Apache CXF WebClient API** *(Unit test ONLY)*
 
 ## Execution Steps:
 - Start MySQL database server
@@ -44,13 +46,15 @@ This project is based upon code found at:
 ## Issues:
 
 ### Ping error in GlassFish when creating JDBC connection pool for MySQL 
-- <b>ERROR MSG:</b>
-	<em>Ping Connection Pool failed for CustomerService. Class name is wrong or classpath is not set for : com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource Please check the server.log for more details.</em>
-- <b>RESOLUTION:</b>
-  COPIED: mysql-connector-java-5.1.36.jar
-  INTO:	C:\Users\Sean\Desktop\sandbox\glassfish4\glassfish\domains\domain1\lib\ext
-- See URL: http://stackoverflow.com/a/8350030/5046445
-- URL for MySQL .jar download: http://mvnrepository.com/artifact/mysql/mysql-connector-java    
+- **ERROR MESSAGE:**
+
+    `Ping Connection Pool failed for CustomerService. Class name is wrong or classpath is not set for : com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource Please check the server.log for more details.`
+	
+- **RESOLUTION:**
+    - COPIED: `mysql-connector-java-5.1.36.jar`
+    - INTO:	`C:\Users\Sean\Desktop\sandbox\glassfish4\glassfish\domains\domain1\lib\ext`
+    - See URL: http://stackoverflow.com/a/8350030/5046445
+    - URL for MySQL .jar download: http://mvnrepository.com/artifact/mysql/mysql-connector-java    
 
 ### Deploy error - ClassNotFoundException: org.glassfish.jersey.spi.container.servlet.ServletContainer 
 The example code specified a "servlet-class" valid for Jersey 1.x in the <b>web.xml</b>. However, <b>GlassFish 4.x</b> includes the RI of Jersey 2.x and its "servlet-class" is different as show below:
@@ -70,3 +74,38 @@ Try as I might, I could NOT get Embedded GlassFish to use anything other than th
 
 - **LINKS:** This work-around method was chosen over using a Maven plugin based solution since I wanted to preserve using Eclipse's feature: *Run as JUnit Test*. The following answer on Stack Overflow explains this issue and the workings of Embedded GlassFish:
     - [Running tests using Embedded Glassfish](http://stackoverflow.com/a/6740944/5046445) 
+
+### Unit Test of EJBs using Embedded OpenEJB FAILS during Maven release:perform
+Unit tests that ran successfully via `mvn clean install` are now failing when executed via `mvn release:perform`. Successful unit tests use **Embedded OpenEJB**, which deploys an EJB that test code calls via  `.getContext().lookup("java:global/RESTfulExampleJAX-RS/CustomerService")` and via **CXF WebClient** requests to URL: `http://localhost:4204/RESTfulExampleJAX-RS/customers`. However, unit tests that are run as part of the Maven Release Plugin's 'perform' goal are failing because OpenEJB is deploying the same EJB with a different JNDI name: `java:global/checkout/CustomerService` and a different request URL: `http://localhost:4204/checkout/customers`.
+
+- **ERROR MESSAGES:**
+    ```
+    javax.naming.NameNotFoundException: Name "global/RESTfulExampleJAX-RS/CustomerService" not found.
+    ```
+    OR
+    ```
+    WARNING - No root resource matching request path /RESTfulExampleJAX-RS/customers/json/9 has been found
+    WARNING - javax.ws.rs.WebApplicationException
+    ``` 
+
+- **EXPLANATION:**
+The unit tests are failing for two different reasons: 1) JNDI name lookup not found, and 2) URL path not found.  Both are related to the Maven goal *release:perform* executing its unit tests under a different code subdirectory at: `target/checkout`. This causes **OpenEJB** to use a different **JNDI name** and **URL** path in the test class when executing the unit tests as shown below:
+    - Unit test output via: `mvn clean install`
+    ```
+    Jndi(name="java:global/RESTfulExampleJAX-RS/CustomerService")
+    ...
+    Service URI: http://localhost:4204/RESTfulExampleJAX-RS/customers
+    ```        
+    - Unit test output via: `mvn release:perform`
+    ```
+    Jndi(name="java:global/checkout/CustomerService")
+    ...
+    Service URI: http://localhost:4204/checkout/customers
+    ```
+
+- **RESOLUTION:**
+    Until a proper resolution is found, the work-around when performing a Maven release is to skip the unit tests by using the following commands:
+    ```
+    mvn -B release:prepare
+    mvn release:perform -Darguments="-DskipTests"
+    ```
