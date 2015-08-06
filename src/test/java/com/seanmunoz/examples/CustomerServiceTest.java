@@ -1,13 +1,13 @@
 package com.seanmunoz.examples;
 
-//import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Collection;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +18,7 @@ import javax.naming.NamingException;
 import javax.validation.ConstraintViolationException;
 
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.openejb.OpenEjbContainer;
+//import org.apache.openejb.OpenEjbContainer;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,14 +36,16 @@ import org.junit.Test;
  */
 public class CustomerServiceTest {
 
-//	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
-//	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");
-//	private static final Path PERSISTENCE_TEST = Paths.get("target/test-classes/META-INF/persistence-test.xml");
+	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
+	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");
+	private static final Path PERSISTENCE_TEST = Paths.get("target/test-classes/META-INF/persistence-test.xml");
 //	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
-	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/CustomerService";
+//	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/CustomerService";
+	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/classes/CustomerService";
 	private static final String URL_HOST = "localhost";
 	private static final String URL_PORT = "4204";
 	private static final String URL_BASE = "http://" + URL_HOST + ":" + URL_PORT;
+//	private static final String URL_PATH = "/RESTfulExampleJAX-RS/rest/customers";
 	private static final String URL_PATH = "/RESTfulExampleJAX-RS/customers";
 	private static EJBContainer container;
 	private static int recordCount = 0;
@@ -59,22 +61,23 @@ public class CustomerServiceTest {
 	public static void setUpBeforeClass() throws NamingException, Exception {
 		
 		// Use alternate persistence.xml for TEST
-//		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
-//		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
+		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
+		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
 		
 		Map<String, Object> properties = new HashMap<String, Object>();
-//		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", "8080");
+		properties.put("eclipselink.cache.shared.default", "false");
+		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", URL_PORT);
 //		properties.put(EJBContainer.MODULES, new File[] {
 //				new File("target/classes"), new File("target/test-classes") });
 		properties.put(EJBContainer.MODULES, new File("target/classes"));
-		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
+		properties.put(EJBContainer.APP_NAME, "RESTfulExampleJAX-RS");
+//		properties.put(OpenEjbContainer.OPENEJB_EMBEDDED_REMOTABLE, "true");
 //		properties.put(OpenEjbContainer.APP_NAME, "RESTfulExampleJAX-RS");
 //		properties.put("java.naming.factory.initial", "org.apache.openejb.client.LocalInitialContextFactory");
 //		properties.put("openejb.deploymentId.format", "{ejbClass.simpleName}");
 //		properties.put("openejb.jndiname.format", "{deploymentId}/{interfaceClass}");
-		properties.put("httpejbd.port", URL_PORT);
-		properties.put("httpejbd.bind", URL_HOST);
-//		properties.put("eclipselink.cache.shared.default", "false");
+//		properties.put("httpejbd.port", URL_PORT);
+//		properties.put("httpejbd.bind", URL_HOST);
 		System.out.println("STARTUP: Opening the container...");
 
 		// createEJBContainer() w/o properties works, but takes MUCH longer
@@ -101,7 +104,7 @@ public class CustomerServiceTest {
 		}
 		
 		// Restore original persistence.xml for production
-//		Files.move(PERSISTENCE_TEMP, PERSISTENCE_PROD, REPLACE_EXISTING);
+		Files.move(PERSISTENCE_TEMP, PERSISTENCE_PROD, REPLACE_EXISTING);
 	}
 
 	/**
