@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+	<!-- Automatically create/deploy application specific JDBC Connection Pool 
+		& JDBC Resource using a MySQL database via GlassFish -->
+	<jdbc-connection-pool
+		datasource-classname="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"
+		res-type="javax.sql.ConnectionPoolDataSource" name="TestRestPool2">
+		<property name="User" value="testrest2"></property>
+		<property name="Password" value="password"></property>
+		<property name="ServerName" value="localhost"></property>
+		<property name="Port" value="3306"></property>
+		<property name="DatabaseName" value="testrest2"></property>
+	</jdbc-connection-pool>
+	<jdbc-resource pool-name="TestRestPool2" jndi-name="java:app/jdbc/TestRest2"></jdbc-resource>
+	
+	<!-- Automatically create/deploy application specific JDBC Connection Pool 
+		& JDBC Resource using a Derby database via GlassFish -->
+	<jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientDataSource"
+		res-type="javax.sql.ConnectionPoolDataSource" name="TestRestPool3">
+		<property name="DatabaseName" value="testrest3" />
+		<property name="User" value="admin" />
+		<property name="Password" value="password" />
+		<property name="PortNumber" value="1527" />
+		<property name="ServerName" value="localhost" />
+		<property name="URL" value="jdbc:derby://localhost:1527/testrest3" />
+		<property name="connectionAttributes" value="create=true" />    
+	</jdbc-connection-pool>
+    <jdbc-resource pool-name="TestRestPool3" jndi-name="java:app/jdbc/TestRest3"></jdbc-resource>
+</resources>
