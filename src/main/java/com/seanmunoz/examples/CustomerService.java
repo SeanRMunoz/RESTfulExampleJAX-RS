@@ -3,6 +3,7 @@
  */
 package com.seanmunoz.examples;
 
+import java.util.Calendar;
 import java.util.List;
 
 import javax.annotation.sql.DataSourceDefinition;
@@ -45,6 +46,7 @@ public class CustomerService {
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public void create(Customer customer) {
+    	customer.setDateCreated(Calendar.getInstance());
         entityManager.persist(customer);
     }
 

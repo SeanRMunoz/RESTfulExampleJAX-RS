@@ -1,6 +1,7 @@
 package com.seanmunoz.examples;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -13,6 +14,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -46,6 +49,11 @@ public class Customer implements Serializable {
    @Column(name="LAST_NAME")
    private String lastName;
 
+   @NotNull							// JPA validation constraint
+   @Column(nullable = false)		// Database constraint
+   @Temporal(TemporalType.TIMESTAMP)
+   private Calendar dateCreated;
+   
    @NotNull
    @OneToOne(mappedBy="customer", cascade={CascadeType.ALL})
    private Address address;
@@ -96,5 +104,13 @@ public class Customer implements Serializable {
    public void setPhoneNumbers(Set<PhoneNumber> phoneNumbers) {
        this.phoneNumbers = phoneNumbers;
    }
+
+	public Calendar getDateCreated() {
+		return dateCreated;
+	}
+	
+	public void setDateCreated(Calendar dateCreated) {
+		this.dateCreated = dateCreated;
+	}
     
 }
