@@ -89,7 +89,10 @@
 	<dependency>
 		<groupId>org.eclipse.persistence</groupId>
 		<artifactId>eclipselink</artifactId>
-		<version>2.4.2</version>
+		<!-- <version>2.4.2</version> -->
+		<!-- Version 2.5.2+ required for full JPA 2.1 support, used for initial 
+			data load in persistence.xml property: javax.persistence.sql-load-script-source -->
+		<version>2.5.2</version>
 	</dependency>
 	<!-- Following dependencies are an alternative to above  -->
 <!--

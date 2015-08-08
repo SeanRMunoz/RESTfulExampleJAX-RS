@@ -5,6 +5,7 @@ package com.seanmunoz.examples;
 
 import java.util.List;
 
+import javax.annotation.sql.DataSourceDefinition;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -24,6 +25,15 @@ import javax.ws.rs.core.MediaType;
 @Stateless
 @LocalBean
 @Path("/customers")
+@DataSourceDefinition(name = "java:app/jdbc/TestRest4",
+	minPoolSize = 0,
+	initialPoolSize = 0,
+	className = "org.apache.derby.jdbc.ClientXADataSource",
+	user = "APP",
+	password = "APP",
+	databaseName = "testrest4",
+	properties = {"connectionAttributes=;create=true"}
+)
 public class CustomerService {
 
 	// NOTE: unitName is the name of the "persistence unit" as defined in the
