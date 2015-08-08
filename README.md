@@ -14,6 +14,10 @@ The following **Java EE** technologies are used in this project:
 - **Embedded OpenEJB** *(Unit test ONLY)*
 - **Apache CXF WebClient API** *(Unit test ONLY)*
 
+## Entity Diagram:
+Diagram created in Eclipse via: *Project->JPA Tools->Open Diagram*
+![Data Diagram](diagrams/RESTfulExampleJAX-RS.png?raw=true "Data Diagram")
+
 ## Execution Steps:
 - Start MySQL database server
 - Start GlassFish server
