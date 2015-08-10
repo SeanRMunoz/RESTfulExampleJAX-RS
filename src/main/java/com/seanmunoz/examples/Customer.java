@@ -14,6 +14,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
@@ -28,7 +29,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 				"WHERE c.address.city = :city"),
 	@NamedQuery(name = "getAllCustomers", 
 		query = "SELECT c " +
-				"FROM Customer c "),
+				"FROM Customer c " +
+				"ORDER BY c.dateCreated DESC"),
 	@NamedQuery(name = "findCustomersByPhone", 
 		query = "SELECT c " +
 				"FROM Customer c " +
@@ -59,6 +61,7 @@ public class Customer implements Serializable {
    private Address address;
 
    @Size(max=3)
+   @OrderBy("type ASC")		// FIXME OrderBy not working on phoneNumbers
    @OneToMany(mappedBy="customer", cascade={CascadeType.ALL})
    private Set<PhoneNumber> phoneNumbers;
 
