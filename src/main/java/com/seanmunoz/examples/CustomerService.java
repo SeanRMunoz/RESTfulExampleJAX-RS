@@ -22,6 +22,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Stateless
 @LocalBean
@@ -72,11 +73,19 @@ public class CustomerService {
 
     @DELETE
     @Path("{id}")
-    public void delete(@PathParam("id") long id) {
+    public Response delete(@PathParam("id") long id) {
+    	Response response;
         Customer customer = read(id);
         if(null != customer) {
             entityManager.remove(customer);
+        	response = Response.status(Response.Status.NO_CONTENT).build();
+        } else {
+			response = Response.status(Response.Status.FORBIDDEN)
+					.entity("Delete FAILED! No customer with ID: " + id)
+					.type(MediaType.TEXT_PLAIN)
+					.build();
         }
+        return response;
     }
 
     @GET
