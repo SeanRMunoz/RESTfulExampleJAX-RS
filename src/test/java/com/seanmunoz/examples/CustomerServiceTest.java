@@ -16,6 +16,7 @@ import java.util.Map;
 import javax.ejb.embeddable.EJBContainer;
 import javax.naming.NamingException;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 //import org.apache.openejb.OpenEjbContainer;
@@ -323,9 +324,20 @@ public class CustomerServiceTest {
 
 		// DELETE the created customer record
 		long createdCustomerID = createdCustomer.getId();
-		customerService.delete(createdCustomerID);
+		Response response = customerService.delete(createdCustomerID);
+		assertEquals("Delete existing customer",
+				Response.Status.NO_CONTENT.getStatusCode(),
+				response.getStatus());
+		
+		// Attempt READ of deleted customer
 		createdCustomer = customerService.read(createdCustomerID);
-		assertNull("Record deleted", createdCustomer);
+		assertNull("Cannot read deleted customer", createdCustomer);
+		
+		// DELETE same record again to test failure response
+		response = customerService.delete(createdCustomerID);
+		assertEquals("Delete nonexisting customer",
+				Response.Status.FORBIDDEN.getStatusCode(), 
+				response.getStatus());
 		
 	}
 
