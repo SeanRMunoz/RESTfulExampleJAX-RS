@@ -91,6 +91,7 @@ public class CustomerService {
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("findCustomersByCity/{city}")
+    @SuppressWarnings("unchecked")
     public List<Customer> findCustomersByCity(@PathParam("city") String city) {
         Query query = entityManager.createNamedQuery("findCustomersByCity");
         query.setParameter("city", city);
