@@ -148,13 +148,15 @@ public class CustomerServiceIT {
         
         // READ list of all customers
         List<Customer> customerListBefore = client
-				.target(baseURL + "rest/customers/all")
+				.target(baseURL.toString())
+				.path("rest/customers/all")
 				.request()
                 .get(new GenericType<List<Customer>>(){});
         
 		// PERSIST a valid customer and save its unique ID
     	Customer persistedCustomer = client
-				.target(baseURL + "rest/customers")
+				.target(baseURL.toString())
+				.path("rest/customers")
     			.request()
     			.post(Entity.entity(validTestCustomer, MediaType.APPLICATION_JSON),
     					Customer.class);
@@ -163,9 +165,10 @@ public class CustomerServiceIT {
 
         // READ list of all customers again AFTER adding one
         Response response = client
-//				.target(baseURL + "rest/customers/findCustomersByCity/Sacramento")
-//				.target(baseURL + "rest/customers/byPhone/916%25")
-				.target(baseURL + "rest/customers/all")
+				.target(baseURL.toString())
+				.path("rest/customers/all")
+//				.path("rest/customers/findCustomersByCity/Sacramento")
+//				.path("rest/customers/byPhone/916%25")
 //				.request()
 //				.request(MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON)
 				.request(MediaType.APPLICATION_JSON)
