@@ -2,28 +2,44 @@ package com.seanmunoz.examples;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.json.stream.JsonGenerator;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
+import org.glassfish.jersey.jsonp.JsonProcessingFeature;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.formatter.Formatters;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+/**
+ * Test class that uses Arquillian platform to perform Integration Tests.  
+ * 
+ * @author Sean Munoz
+ *
+ */
 @RunWith(Arquillian.class)
 public class CustomerServiceIT {
 	
@@ -36,26 +52,16 @@ public class CustomerServiceIT {
     @Inject
     UserTransaction utx;    
 
-/*	
-    @Deployment
-    public static JavaArchive createDeployment() {
-    	JavaArchive jar = ShrinkWrap.create(JavaArchive.class)
-            .addClasses(Address.class, Customer.class, CustomerService.class, PhoneNumber.class)
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        System.out.println(jar.toString(true));
-        return jar;        
-    }
-*/
-
-//    @Deployment(testable = false)
     @Deployment
     public static WebArchive createNotTestableDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
-        		.addPackage(Customer.class.getPackage())
-//        		.addClasses(Address.class, Customer.class, CustomerService.class, PhoneNumber.class)
+//        		.addPackage(Customer.class.getPackage())
+        		.setWebXML(new File("src/main/webapp/WEB-INF", "/web.xml"))
+        		.addClasses(Address.class, Customer.class, CustomerService.class, PhoneNumber.class)
 //	            .addAsResource("META-INF/persistence-test.xml", "META-INF/persistence.xml")
 	            .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
-	            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+//	            .addAsResource("jaxb.properties", "com/seanmunoz/examples/jaxb.properties")
+        		.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         System.out.println(war.toString(Formatters.VERBOSE));
         return war;
     }    
@@ -63,7 +69,6 @@ public class CustomerServiceIT {
 	private static int recordCount = 0;
     Customer validTestCustomer;
     
-//    @RunAsClient // Same as @Deployment(testable = false), should only be used in mixed mode
     @Test
 	public void testRead() {
 		String firstName = validTestCustomer.getFirstName();
@@ -129,6 +134,72 @@ public class CustomerServiceIT {
 		assertEquals("Unique city name matches", uniqueCity, customersFound
 				.get(0).getAddress().getCity());
 
+	}
+	
+	@Test
+	@RunAsClient
+	public void testGetAllCustomers(@ArquillianResource URL baseURL) throws Exception {
+		
+		// Create HTTP client connection
+        Client client = ClientBuilder.newBuilder()
+                .register(JsonProcessingFeature.class)
+                .property(JsonGenerator.PRETTY_PRINTING, true)
+                .build();
+        
+        // READ list of all customers
+        List<Customer> customerListBefore = client
+				.target(baseURL + "rest/customers/all")
+				.request()
+                .get(new GenericType<List<Customer>>(){});
+        
+		// PERSIST a valid customer and save its unique ID
+    	Customer persistedCustomer = client
+				.target(baseURL + "rest/customers")
+    			.request()
+    			.post(Entity.entity(validTestCustomer, MediaType.APPLICATION_JSON),
+    					Customer.class);
+    	final long persistedCustomerId = persistedCustomer.getId();
+        System.out.println("POST persistedCustomer.getId(): " + persistedCustomerId );
+
+        // READ list of all customers again AFTER adding one
+        Response response = client
+//				.target(baseURL + "rest/customers/findCustomersByCity/Sacramento")
+//				.target(baseURL + "rest/customers/byPhone/916%25")
+				.target(baseURL + "rest/customers/all")
+//				.request()
+//				.request(MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON)
+				.request(MediaType.APPLICATION_JSON)
+//				.request(MediaType.APPLICATION_XML)
+                .get();
+        response.bufferEntity();
+		List<Customer> customerListAfter = response.readEntity(new GenericType<List<Customer>>(){});
+        
+		System.out.println("baseURL: " + baseURL.toString());
+        System.out.println("response.getStatus(): " + response.getStatus());
+        System.out.println("response.readEntity(): " + response.readEntity(String.class));
+        
+		// PRINT list of customers, verifying new customer was added
+        boolean matchFound = false;
+		for (Customer customer : customerListAfter) {
+			if (customer.getId() == persistedCustomerId) {
+				matchFound = true;
+			}
+		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
+		    System.out.println("Customer ID: " + customer.getId() );
+			System.out.println("Address: " + customer.getAddress().getStreet()
+					+ ", " + customer.getAddress().getCity());
+			System.out.println("Created: " + customer.getDateCreated().getTime() );
+			for (PhoneNumber p : customer.getPhoneNumbers()) {
+				System.out.println("Phone, " + p.getType() + ": " + p.getNum());
+			}
+		}
+
+		// Perform assertions on results
+        assertEquals("HTTP response code = OK", HttpServletResponse.SC_OK, response.getStatus());
+		assertEquals("Customer count increased by ONE", customerListBefore.size() + 1,
+				customerListAfter.size());
+        assertEquals("Newly added customer found in list", true, matchFound);
+        
 	}
 
 	public void preparePersistenceTest() throws Exception {
