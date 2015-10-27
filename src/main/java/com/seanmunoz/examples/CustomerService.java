@@ -46,9 +46,11 @@ public class CustomerService {
 
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public void create(Customer customer) {
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response create(Customer customer) {
     	customer.setDateCreated(Calendar.getInstance());
         entityManager.persist(customer);
+        return Response.ok(customer).build();
     }
 
     @GET
