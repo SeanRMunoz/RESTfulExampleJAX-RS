@@ -1,16 +1,19 @@
 package com.seanmunoz.examples;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.Collection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 import javax.ejb.embeddable.EJBContainer;
@@ -18,14 +21,12 @@ import javax.naming.NamingException;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.client.WebClient;
-//import org.apache.openejb.OpenEjbContainer;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+//import org.apache.openejb.OpenEjbContainer;
 
 /**
  * Unit test class (integration test, really) for the CustomerService EJB class.
@@ -43,11 +44,11 @@ public class CustomerServiceTest {
 //	private static final String EJB_JNDI_NAME = "java:global/classes/CustomerService";
 //	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/CustomerService";
 	private static final String EJB_JNDI_NAME = "java:global/RESTfulExampleJAX-RS/classes/CustomerService";
-	private static final String URL_HOST = "localhost";
-	private static final String URL_PORT = "4204";
-	private static final String URL_BASE = "http://" + URL_HOST + ":" + URL_PORT;
+//	private static final String URL_HOST = "localhost";
+//	private static final String URL_PORT = "4204";
+//	private static final String URL_BASE = "http://" + URL_HOST + ":" + URL_PORT;
 //	private static final String URL_PATH = "/RESTfulExampleJAX-RS/rest/customers";
-	private static final String URL_PATH = "/RESTfulExampleJAX-RS/customers";
+//	private static final String URL_PATH = "/RESTfulExampleJAX-RS/customers";
 	private static EJBContainer container;
 	private static int recordCount = 0;
 	private static CustomerService customerService;
@@ -307,58 +308,6 @@ public class CustomerServiceTest {
 				Response.Status.FORBIDDEN.getStatusCode(), 
 				response.getStatus());
 		
-	}
-
-	/**
-	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByPhone(String)}.
-	 */
-	@Test
-	public void testFindCustomersByPhone() {
-
-		String lastName = validTestCustomer.getLastName();
-		String city = validTestCustomer.getAddress().getCity();
-		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
-				.getPhoneNumbers().toArray()[0])).getNum();
-		String secondPhoneNumber = ((PhoneNumber) (validTestCustomer
-				.getPhoneNumbers().toArray()[1])).getNum();
-
-		// PERSIST a new customer
-		customerService.create(validTestCustomer);
-		
-		// QUERY customers with matching phone using JAX-RS client
-		Collection<? extends Customer> matchingCustomers = WebClient
-				.create(URL_BASE)
-	    		.path(URL_PATH + "/byPhone/" + secondPhoneNumber)
-				.accept(javax.ws.rs.core.MediaType.APPLICATION_XML)
-				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
-				.getCollection(Customer.class);
-
-		// PRINT the list of matching customers
-		for (Customer customer : matchingCustomers) {
-		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
-			System.out.println("Address: " + customer.getAddress().getStreet()
-					+ ", " + customer.getAddress().getCity());
-			for (PhoneNumber p : customer.getPhoneNumbers()) {
-				System.out.println("Phone, " + p.getType() + ": " + p.getNum());
-			}
-		}
-		
-		// Test phone numbers generated randomly, so should only match one
-		assertNotNull("Read created record", matchingCustomers);
-		assertEquals("Found matching record", 1, matchingCustomers.size());
-
-		// Test phone numbers generated randomly, so should only match one
-		Customer firstMatchingCustomer = (Customer)(matchingCustomers.toArray())[0];
-		assertEquals("Last name match", lastName, firstMatchingCustomer.getLastName());
-		assertEquals("City match", city, firstMatchingCustomer.getAddress().getCity());
-		boolean isPhoneMatch = false;
-		for (PhoneNumber phone : firstMatchingCustomer.getPhoneNumbers()) {
-			if (phone.getNum().equals(firstPhoneNumber)) {
-				isPhoneMatch = true;
-				break;
-			}
-		}
-		assertEquals("Phone match", true, isPhoneMatch);
 	}
 
 }

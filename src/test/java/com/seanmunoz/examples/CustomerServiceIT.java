@@ -263,6 +263,70 @@ public class CustomerServiceIT {
 		assertEquals("Phone match", true, isPhoneMatch);
 	}
 	
+	/**
+	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByPhone(String)}.
+	 */
+	@Test
+	@RunAsClient
+	public void testFindCustomersByPhone(@ArquillianResource URL baseURL) {
+
+		// Create HTTP client connection
+        Client client = ClientBuilder.newBuilder()
+                .register(JsonProcessingFeature.class)
+                .property(JsonGenerator.PRETTY_PRINTING, true)
+                .build();
+
+		String lastName = validTestCustomer.getLastName();
+		String city = validTestCustomer.getAddress().getCity();
+		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[0])).getNum();
+		String secondPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[1])).getNum();
+
+		// PERSIST a valid customer
+    	@SuppressWarnings("unused")
+		Customer persistedCustomer = client
+				.target(baseURL.toString())
+				.path("rest/customers")
+    			.request()
+    			.post(Entity.entity(validTestCustomer, MediaType.APPLICATION_XML),
+    					Customer.class);
+		
+        // READ list of matching customers
+        List<Customer> matchingCustomers = client
+				.target(baseURL.toString())
+				.path("rest/customers/byPhone/" + secondPhoneNumber)
+				.request()
+                .get(new GenericType<List<Customer>>(){});
+
+		// PRINT the list of matching customers
+		for (Customer customer : matchingCustomers) {
+		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
+			System.out.println("Address: " + customer.getAddress().getStreet()
+					+ ", " + customer.getAddress().getCity());
+			for (PhoneNumber p : customer.getPhoneNumbers()) {
+				System.out.println("Phone, " + p.getType() + ": " + p.getNum());
+			}
+		}
+		
+		// Test phone numbers generated randomly, so should only match one
+		assertNotNull("Read created record", matchingCustomers);
+		assertEquals("Found matching record", 1, matchingCustomers.size());
+
+		// Test phone numbers generated randomly, so should only match one
+		Customer firstMatchingCustomer = matchingCustomers.get(0);
+		assertEquals("Last name match", lastName, firstMatchingCustomer.getLastName());
+		assertEquals("City match", city, firstMatchingCustomer.getAddress().getCity());
+		boolean isPhoneMatch = false;
+		for (PhoneNumber phone : firstMatchingCustomer.getPhoneNumbers()) {
+			if (phone.getNum().equals(firstPhoneNumber)) {
+				isPhoneMatch = true;
+				break;
+			}
+		}
+		assertEquals("Phone match", true, isPhoneMatch);
+	}
+
 	public void preparePersistenceTest() throws Exception {
 		System.out.println("BEFORE: running.");
 	    clearData();
