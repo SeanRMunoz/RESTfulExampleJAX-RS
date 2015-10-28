@@ -205,6 +205,57 @@ public class CustomerServiceIT {
         
 	}
 
+	/**
+	 * Test method for {@link com.seanmunoz.examples.CustomerService#readJSON(long)}.
+	 */
+	@Test
+	@RunAsClient
+	public void testReadJSON(@ArquillianResource URL baseURL) {
+
+		// Create HTTP client connection
+        Client client = ClientBuilder.newBuilder()
+                .register(JsonProcessingFeature.class)
+                .property(JsonGenerator.PRETTY_PRINTING, true)
+                .build();
+
+        // Save pertinent fields for comparison later  
+		String lastName = validTestCustomer.getLastName();
+		String city = validTestCustomer.getAddress().getCity();
+		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
+				.getPhoneNumbers().toArray()[0])).getNum();
+
+		// PERSIST a valid customer
+    	Customer persistedCustomer = client
+				.target(baseURL.toString())
+				.path("rest/customers")
+    			.request()
+    			.post(Entity.entity(validTestCustomer, MediaType.APPLICATION_JSON),
+    					Customer.class);
+        
+		// READ back the newly created Customer
+	    Response response  = client
+				.target(baseURL.toString())
+				.path("rest/customers/json/" + persistedCustomer.getId())
+				.request()
+                .get();
+        response.bufferEntity();
+        Customer createdCustomer = response.readEntity(Customer.class);
+		
+		// Make assertions
+        assertNotNull("Read back created record", createdCustomer);
+		assertEquals("Response is type JSON", MediaType.APPLICATION_JSON, response.getMediaType().toString());
+		assertEquals("Last name match", lastName, createdCustomer.getLastName());
+		assertEquals("City match", city, createdCustomer.getAddress().getCity());
+		boolean isPhoneMatch = false;
+		for (PhoneNumber phone : createdCustomer.getPhoneNumbers()) {
+			if (phone.getNum().equals(firstPhoneNumber)) {
+				isPhoneMatch = true;
+				break;
+			}
+		}
+		assertEquals("Phone match", true, isPhoneMatch);
+	}
+	
 	public void preparePersistenceTest() throws Exception {
 		System.out.println("BEFORE: running.");
 	    clearData();

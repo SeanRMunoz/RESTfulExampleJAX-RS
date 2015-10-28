@@ -245,38 +245,6 @@ public class CustomerServiceTest {
 	}
 
 	/**
-	 * Test method for {@link com.seanmunoz.examples.CustomerService#readJSON(long)}.
-	 */
-	@Test
-	public void testReadJSON() {
-
-		String lastName = validTestCustomer.getLastName();
-		String city = validTestCustomer.getAddress().getCity();
-		String firstPhoneNumber = ((PhoneNumber) (validTestCustomer
-				.getPhoneNumbers().toArray()[0])).getNum();
-
-		customerService.create(validTestCustomer);
-
-		// GET customer object using JAX-RS web client
-	    Customer createdCustomer  = WebClient.create(URL_BASE)
-	    		.path(URL_PATH + "/json/" + validTestCustomer.getId())
-				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
-	    		.get(Customer.class);
-		assertNotNull("Read created record", createdCustomer);
-		
-		assertEquals("Last name match", lastName, createdCustomer.getLastName());
-		assertEquals("City match", city, createdCustomer.getAddress().getCity());
-		boolean isPhoneMatch = false;
-		for (PhoneNumber phone : createdCustomer.getPhoneNumbers()) {
-			if (phone.getNum().equals(firstPhoneNumber)) {
-				isPhoneMatch = true;
-				break;
-			}
-		}
-		assertEquals("Phone match", true, isPhoneMatch);
-	}
-
-	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#update(com.seanmunoz.examples.Customer)}.
 	 */
 	@Test
