@@ -9,7 +9,7 @@
     </engine>
 
     <!-- Required configuration for an embedded GlassFish instance -->
-    <container qualifier="glassfish-embedded">
+	<container qualifier="glassfish-embedded" default="true">
          <configuration>
              <property name="bindHttpPort">7070</property>
              <property name="resourcesXml">src/test/resources/glassfish-resources.xml</property>
