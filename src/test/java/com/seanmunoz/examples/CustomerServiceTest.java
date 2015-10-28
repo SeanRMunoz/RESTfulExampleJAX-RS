@@ -67,7 +67,7 @@ public class CustomerServiceTest {
 		
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put("eclipselink.cache.shared.default", "false");
-		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", URL_PORT);
+//		properties.put("org.glassfish.ejb.embedded.glassfish.web.http.port", URL_PORT);
 //		properties.put(EJBContainer.MODULES, new File[] {
 //				new File("target/classes"), new File("target/test-classes") });
 		properties.put(EJBContainer.MODULES, new File("target/classes"));
