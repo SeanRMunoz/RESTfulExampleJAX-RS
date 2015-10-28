@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.json.stream.JsonGenerator;
@@ -54,6 +55,10 @@ public class CustomerServiceIT {
 
     @Deployment
     public static WebArchive createNotTestableDeployment() {
+		// Set location of DERBY.LOG file
+		Properties p = System.getProperties();
+		p.setProperty("derby.stream.error.file", "target/derby.log");
+		
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
 //        		.addPackage(Customer.class.getPackage())
         		.setWebXML(new File("src/main/webapp/WEB-INF", "/web.xml"))

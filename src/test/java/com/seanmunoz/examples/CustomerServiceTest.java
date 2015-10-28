@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.ejb.embeddable.EJBContainer;
 import javax.naming.NamingException;
@@ -65,6 +66,10 @@ public class CustomerServiceTest {
 		// Use alternate persistence.xml for TEST
 		Files.move(PERSISTENCE_PROD, PERSISTENCE_TEMP, REPLACE_EXISTING);
 		Files.copy(PERSISTENCE_TEST, PERSISTENCE_PROD, REPLACE_EXISTING);
+
+		// Set location of DERBY.LOG file
+		Properties p = System.getProperties();
+		p.setProperty("derby.stream.error.file", "target/derby.log");
 		
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put("eclipselink.cache.shared.default", "false");
