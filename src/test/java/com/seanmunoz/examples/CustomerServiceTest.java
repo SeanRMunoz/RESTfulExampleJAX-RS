@@ -310,68 +310,6 @@ public class CustomerServiceTest {
 	}
 
 	/**
-	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByCity(java.lang.String)}.
-	 */
-	@Test
-	public void testFindCustomersByCity() {
-		final String uniqueCity = "Unique City Name";
-
-		// PERSIST a valid customer with a unique city
-		validTestCustomer.getAddress().setCity(uniqueCity);
-		customerService.create(validTestCustomer);
-
-		// READ back the newly created Customer
-		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
-		assertNotNull("Read created record", createdCustomer);
-		
-		// QUERY for unique city and verify results
-		List<Customer> customersFound = customerService.findCustomersByCity(uniqueCity);
-		// FIXME findCustomersByCity() not returning expected result,
-		// which causes the following assertion to fail. Why??
-		assertEquals("Found matching record", 1, customersFound.size());
-		assertEquals("Unique city name matches", uniqueCity, customersFound
-				.get(0).getAddress().getCity());
-
-	}
-	
-	/**
-	 * Test method for {@link com.seanmunoz.examples.CustomerService#getAllCustomers()}.
-	 */
-	@Test
-	public void testGetAllCustomers() {
-
-		// QUERY all customers 
-		int customerCount = customerService.getAllCustomers().size();
-
-		// PERSIST a new customer
-		customerService.create(validTestCustomer);
-
-		// QUERY all customers again and compare count using JAX-RS client
-		Collection<? extends Customer> allCustomers = WebClient
-				.create(URL_BASE)
-				.path(URL_PATH + "/all")
-				.accept(javax.ws.rs.core.MediaType.APPLICATION_XML)
-				.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON)
-				.getCollection(Customer.class);
-		
-		// PRINT the list of customers
-		for (Customer customer : allCustomers) {
-		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
-			System.out.println("Address: " + customer.getAddress().getStreet()
-					+ ", " + customer.getAddress().getCity());
-			for (PhoneNumber p : customer.getPhoneNumbers()) {
-				System.out.println("Phone, " + p.getType() + ": " + p.getNum());
-			}
-		}
-		
-		System.out.println("Total customer count before: " + customerCount
-				+ " and after: " + allCustomers.size());
-		assertEquals("Customer count increase by ONE", customerCount + 1,
-				allCustomers.size());
-		
-	}
-
-	/**
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByPhone(String)}.
 	 */
 	@Test

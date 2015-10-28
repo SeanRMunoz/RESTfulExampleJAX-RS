@@ -93,6 +93,9 @@ public class CustomerServiceIT {
 		assertEquals("Phone match", true, isPhoneMatch);
 	}
 
+	/**
+	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByCity(java.lang.String)}.
+	 */
 	@Test
 	public void testFindCustomersByCity() throws Exception {
 		final String uniqueCity = "UniqueCityName";
@@ -116,6 +119,7 @@ public class CustomerServiceIT {
 				.getAddress().getCity());
 		
 		// QUERY for unique city and verify results
+		// FIXME method findCustomersByCity() failing
 //		List<Customer> customersFound = customerService.findCustomersByCity(uniqueCity);
 		List<Customer> customersFound = customerService.getAllCustomers();
 		
@@ -136,6 +140,9 @@ public class CustomerServiceIT {
 
 	}
 	
+	/**
+	 * Test method for {@link com.seanmunoz.examples.CustomerService#getAllCustomers()}.
+	 */
 	@Test
 	@RunAsClient
 	public void testGetAllCustomers(@ArquillianResource URL baseURL) throws Exception {
