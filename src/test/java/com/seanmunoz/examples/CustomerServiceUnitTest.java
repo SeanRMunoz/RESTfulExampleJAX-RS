@@ -37,7 +37,7 @@ import org.junit.Test;
  * @author Sean Munoz
  *
  */
-public class CustomerServiceTest {
+public class CustomerServiceUnitTest {
 
 	private static final Path PERSISTENCE_PROD = Paths.get("target/classes/META-INF/persistence.xml");
 	private static final Path PERSISTENCE_TEMP = Paths.get("target/classes/META-INF/persistence-ORIGINAL.xml");

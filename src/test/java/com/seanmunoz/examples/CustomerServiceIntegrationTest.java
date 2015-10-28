@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(Arquillian.class)
-public class CustomerServiceIT {
+public class CustomerServiceIntegrationTest {
 	
     @Inject
     private CustomerService customerService;
