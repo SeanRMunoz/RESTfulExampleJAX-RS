@@ -97,32 +97,37 @@ public class CustomerServiceIT {
 	 * Test method for {@link com.seanmunoz.examples.CustomerService#findCustomersByCity(java.lang.String)}.
 	 */
 	@Test
-	public void testFindCustomersByCity() throws Exception {
-		final String uniqueCity = "UniqueCityName";
-		int customerCount = customerService.getAllCustomers().size();
+	@RunAsClient
+	public void testFindCustomersByCity(@ArquillianResource URL baseURL) throws Exception {
 
-//	    utx.begin();
-//	    em.joinTransaction();
+		// Create HTTP client connection
+        Client client = ClientBuilder.newBuilder()
+                .register(JsonProcessingFeature.class)
+                .property(JsonGenerator.PRETTY_PRINTING, true)
+                .build();
+
+		final String uniqueCity = "UniqueCityName";
 
 		// PERSIST a valid customer with a unique city
 		validTestCustomer.getAddress().setCity(uniqueCity);
-		customerService.create(validTestCustomer);
+    	Customer persistedCustomer = client
+				.target(baseURL.toString())
+				.path("rest/customers")
+    			.request()
+    			.post(Entity.entity(validTestCustomer, MediaType.APPLICATION_JSON),
+    					Customer.class);
+    	assertNotNull("Read back created record", persistedCustomer);
 
-//	    utx.commit();
-//	    // clear the persistence context (first-level cache)
-//	    em.clear();
-		
-		// READ back the newly created Customer
-		Customer createdCustomer = customerService.read(validTestCustomer.getId()); 
-		assertNotNull("Read created record", createdCustomer);
-		assertEquals("Unique city name matches", uniqueCity, createdCustomer
-				.getAddress().getCity());
-		
-		// QUERY for unique city and verify results
-		// FIXME method findCustomersByCity() failing
-//		List<Customer> customersFound = customerService.findCustomersByCity(uniqueCity);
-		List<Customer> customersFound = customerService.getAllCustomers();
-		
+        // READ list of matching customers AFTER adding one
+        Response response = client
+				.target(baseURL.toString())
+				.path("rest/customers/findCustomersByCity/")
+				.path(uniqueCity)
+				.request()
+                .get();
+        response.bufferEntity();
+		List<Customer> customersFound = response.readEntity(new GenericType<List<Customer>>(){});
+
 		// PRINT the list of customers
 		for (Customer customer : customersFound) {
 		    System.out.println("Customer Name: " + customer.getFirstName() + " " + customer.getLastName() );
@@ -134,7 +139,7 @@ public class CustomerServiceIT {
 			}
 		}
 		
-		assertEquals("Found matching record", customerCount+1, customersFound.size());
+		assertEquals("Found unique matching record", 1, customersFound.size());
 		assertEquals("Unique city name matches", uniqueCity, customersFound
 				.get(0).getAddress().getCity());
 
