@@ -20,5 +20,40 @@
 	<persistence-context-ref>
 		<persistence-context-ref-name>persistence/em</persistence-context-ref-name>
 		<persistence-unit-name>RESTfulExampleJAX-RS</persistence-unit-name>
-	</persistence-context-ref>  
+	</persistence-context-ref>
+
+	<!-- Enable security features -->
+	<!-- GlassFish server manual setup steps: 
+			1) Enable 'Default Principal To Role Mapping' via GlassFish admin console: 
+				Configurations->server-config->Security
+			2) Create one or more 'file' realm users via GlassFish admin console:
+				Configurations->server-config->Security->Realms->file->Manage Users->New...
+				NOTE: A user's "Group List" must map to a <role-name> below.
+				AUTHORIZED TEST USER: U=test1 P=abc123
+				UNAUTHORIZED TEST USER: U=test2 P=xyz123
+	-->
+	<security-constraint>
+		<display-name>Restrict ByPhone Requests</display-name>
+		<web-resource-collection>
+		    <web-resource-name>Restrict GET via ByPhone</web-resource-name>
+		    <url-pattern>/rest/customers/byPhone/*</url-pattern>
+		    <http-method>GET</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+		    <role-name>client</role-name> 
+		</auth-constraint>
+		<user-data-constraint>
+			<!-- In production use CONFIDENTIAL -->
+		    <transport-guarantee>NONE</transport-guarantee>
+		</user-data-constraint>		
+	</security-constraint>
+	<login-config>
+	    <auth-method>BASIC</auth-method>
+	    <realm-name>default</realm-name>
+	</login-config>
+	<!-- Below needed ONLY when using role mapping?
+	<security-role>
+	    <role-name>client</role-name>
+	</security-role>
+ 	-->	
 </web-app>
