@@ -11,8 +11,8 @@ The following **Java EE** technologies are used in this project:
 - **EclipseLink:** The **JPA** *provider* responsible for ORM and Persistence. Alternates include *Hibernate*, *OpenJPA*, etc. 
 - **EclipseLink MOXy:** The **JAXB** *provider* (for **XML** & **JSON** bindings) via the `jaxb.properties` file. Also defines annotation: `@XmlInverseReference` 
 - **JDBC Connection Pools (DBCP)** and **JDBC Resource** on **GlassFish Server v4.1**
-- **Embedded OpenEJB** *(Unit test ONLY)*
-- **Apache CXF WebClient API** *(Unit test ONLY)*
+- **Embedded GlassFish** *(Unit test ONLY)*
+- **Arquillian** test framework *(Integration test ONLY)*
 
 ## Entity Diagram:
 Diagram created in Eclipse via: *Project->JPA Tools->Open Diagram*
